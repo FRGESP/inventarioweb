@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/main.css" />
+    <script src="../../../node_modules\bootstrap\dist\js\bootstrap.bundle.min.js"></script>
+    <script
+      src="https://kit.fontawesome.com/0caab475fe.js"
+      crossorigin="anonymous"
+    ></script>
+    <style>
+        #icono {
+           padding: 10px; 
+           width: 12px;
+           height: 45px;
+        }
+    </style>
+    <title>Inicio</title>
+</head>
+<body>
+
+    <div class="container d-flex justify-content-center align-items-center" style="height: 100vh;">
+        <div class="card border-dark mb-3" style="width: 25rem;">
+            <div class="card-header"><div class="text-center"><h3>Iniciar Sesión</h3></i></div></div>
+            <div class="card-body">
+                <div id="alertas"></div>
+                <label class="form-labe">Número de Empleado:</label>
+                <input class="form-control" id="IdEmpleado">
+                <br>
+                <label class="form-labe">Contraseña:</label>
+                <input class="form-control" type="password" id="Contraseña">
+                <br>
+                <div class="d-grid">
+                    <button type="button" class="btn btn-success" id="Ingresar" onclick="ingresar()">Ingresar</button>
+                  </div>
+            </div>
+        </div>
+    </div>
+
+    <script  src="./../js/indexPage.js"></script>
+</body>
+</html>
