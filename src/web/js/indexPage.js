@@ -1,6 +1,5 @@
 const inputIdEmpleado = document.getElementById('IdEmpleado');
 const inputContraseña = document.getElementById('Contraseña');
-let empleado;
 
 API = "http://localhost:3000/";
 
@@ -19,10 +18,9 @@ async function ingresar() {
     if(res.ok) {
         const resJson = await res.json();
         const respuesta = resJson.Respuesta;
-        empleado = resJson.Empleado;
         if(respuesta == "Correct") {
             crearAlerta("success","Contraseña Correcta")
-            window.location.href = "inicio.html"
+            window.location.href = '/'+'inicio'
         }
         if(respuesta == "Incorrect") {
             crearAlerta("danger","Contraseña Incorrecta")
