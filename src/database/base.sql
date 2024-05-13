@@ -32,13 +32,6 @@ CONSTRAINT FK_EmpleadosToRoles FOREIGN KEY(IdRol) REFERENCES Roles(IdRol) ON DEL
 CONSTRAINT FK_EmpleadosToPersonas FOREIGN KEY(IdPersona) REFERENCES Personas(IdPersona) ON DELETE CASCADE
 );
 
-CREATE TABLE Sesiones(
-IdSesion int not null Identity,
-IdEmpleado int not null,
-CONSTRAINT PK_Sesiones PRIMARY KEY(IdSesion),
-CONSTRAINT FK_SesionesToEmpleados FOREIGN KEY(IdEmpleado) REFERENCES Empleados(IdEmpleado) ON DELETE CASCADE
-);
-
 ---------------------------------------FUNCIONES-----------------------
 GO
 
@@ -98,7 +91,7 @@ CREATE OR ALTER PROCEDURE SP_ValidarEmpleado(@Id int, @Clave varchar(15))
 AS
 BEGIN
 	DECLARE @Valor varchar(15)
-	SET @Valor = (select CONCAT(P.NOmbre,' ',P.Apellidos) as Empleado from Empleados as E INNER JOIN Personas as P ON E.IdPersona = P.IdPersona where E.IdEmpleado = @Id)
+	SET @Valor = (select IdEmpleado from Empleados where IdEmpleado = @Id)
 	select dbo.validarEmpleado(@Id,@Clave) as 'Respuesta', @Valor as Empleado
 END
 GO
