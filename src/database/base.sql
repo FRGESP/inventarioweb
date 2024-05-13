@@ -9,7 +9,7 @@ CREATE TABLE Personas(
 IdPersona int not null Identity,
 Nombre varchar(20) not null,
 Apellidos varchar(30) not null,
-CorreoElectronico varchar(25) not null unique,
+CorreoElectronico varchar(50) not null unique,
 Telefono varchar(15) not null unique,
 CONSTRAINT PK_Personas PRIMARY KEY(IdPersona)
 );
@@ -32,6 +32,12 @@ CONSTRAINT FK_EmpleadosToRoles FOREIGN KEY(IdRol) REFERENCES Roles(IdRol) ON DEL
 CONSTRAINT FK_EmpleadosToPersonas FOREIGN KEY(IdPersona) REFERENCES Personas(IdPersona) ON DELETE CASCADE
 );
 
+---------------------------------------VISTAS-----------------------
+GO
+CREATE OR ALTER VIEW Perfil
+AS
+Select E.IdEmpleado as Empleado, R.Rol,CONCAT(P.Nombre,' ',P.Apellidos) as Nombre, P.CorreoElectronico as Correo, P.Telefono, E.Estatus from Empleados as E INNER JOIN Personas as P on E.IdPersona = P.IdPersona INNER JOIN Roles as R ON E.IdRol = R.IdRol
+Go
 ---------------------------------------FUNCIONES-----------------------
 GO
 
@@ -90,19 +96,41 @@ GO
 CREATE OR ALTER PROCEDURE SP_ValidarEmpleado(@Id int, @Clave varchar(15))
 AS
 BEGIN
-	DECLARE @Valor varchar(15)
-	SET @Valor = (select IdEmpleado from Empleados where IdEmpleado = @Id)
-	select dbo.validarEmpleado(@Id,@Clave) as 'Respuesta', @Valor as Empleado
+	DECLARE @IdEmpleado int,@Rol int;
+	SET @IdEmpleado = (select IdEmpleado from Empleados where IdEmpleado = @Id)
+	SET @Rol = (SELECT IdRol from Empleados where IdEmpleado = @ID)
+	select dbo.validarEmpleado(@Id,@Clave) as 'Respuesta', @IdEmpleado as Empleado,@Rol as Rol
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_Perfil(@Id int)
+AS
+BEGIN
+	SELECT * FROM Perfil where Empleado = @ID
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_EditarPerfil(@Id int,@Correo varchar(25),@Telefono varchar(15))
+AS
+BEGIN
+	Declare @IdPersona int;
+	SET @IdPersona = (SELECT IdPersona from Empleados WHERE IdEmpleado = @Id);
+	UPDATE Personas set CorreoElectronico = @Correo, Telefono = @Telefono where IdPersona = @IdPersona
+	select * from Personas where IdPersona = @IdPersona
 END
 GO
 
 EXEC SP_InsertPersonas 'Juan', 'Pérez','juan@gmail.com','4454554575'
 EXEC SP_InsertPersonas 'Pedro', 'Villa','pedro@gmail.com','45557454'
+EXEC SP_InsertPersonas 'Joaquin','Piedra','joaquin@gmail.com','454545454'
 
 EXEC SP_InsertRoles 'Gerente'
 EXEC SP_InsertRoles 'Operador'
 
 EXEC SP_InsertEmpleados 1,2,'Password123', 2000, 'Activo'
 EXEC SP_InsertEmpleados 2,1,'Password321',4000,'Activo'
+EXEC SP_InsertEmpleados 3,1,'',4000,'Activo'
 
 EXEC SP_ValidarEmpleado 1,'Password123'
+
+EXEC SP_Perfil 2

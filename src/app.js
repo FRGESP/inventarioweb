@@ -2,6 +2,8 @@ import express from 'express';
 import cors from "cors";
 import productosRutas from './routes/productos.routes.js';
 import indexRutas from './routes/index.routes.js';
+import sesionesRutas from './routes/sesiones.route.js'
+import perfilRutas from './routes/perfil.route.js'
 import session from 'express-session';
 import path from 'path';
 
@@ -24,8 +26,12 @@ const __dirname = path.resolve();
 
 
 app.use(express.json());
+
 app.use(productosRutas);
 app.use(indexRutas);
+app.use(sesionesRutas);
+app.use(perfilRutas);
+
 app.use(express.static(path.join(__dirname, 'src', 'web')));
 
 app.get('/', (req, res) => {
@@ -39,4 +45,5 @@ app.get('/:page', (req, res) => {
     const page = req.params.page;
     res.sendFile(path.join(__dirname, 'src', 'web', 'html', `${page}.html`));
   });
+
 export default app;
