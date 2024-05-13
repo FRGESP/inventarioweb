@@ -55,3 +55,18 @@ export const logout = async (req, res) => {
         return res.status(500).json({ message: "Error al cerrar sesión" });
     }
 };
+
+export const vistaTablas = async (req,res) => {
+    try{
+        const pool = await getConnection();
+        const procedure = req.params.procedure;
+        console.log(procedure)
+        const result = await pool.request()
+        .query(`EXEC ${procedure}`)
+        return res.json(result.recordset);
+    } catch(error) {
+        console.error("Error:", error.message);
+        return res.status(404).json({message : error.message})
+    }
+}
+
