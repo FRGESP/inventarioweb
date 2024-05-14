@@ -38,6 +38,7 @@ CREATE OR ALTER VIEW Perfil
 AS
 Select E.IdEmpleado as Empleado, R.Rol,CONCAT(P.Nombre,' ',P.Apellidos) as Nombre, P.CorreoElectronico as Correo, P.Telefono, E.Estatus from Empleados as E INNER JOIN Personas as P on E.IdPersona = P.IdPersona INNER JOIN Roles as R ON E.IdRol = R.IdRol
 Go
+
 ---------------------------------------FUNCIONES-----------------------
 GO
 
@@ -67,7 +68,6 @@ BEGIN
 END
 GO
 
-select dbo.validarEmpleado(2,'Password321') as 'Respuesta'
 
 ---------------------------------------STOCK PROCEDURE-----------------------
 GO
@@ -120,6 +120,14 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE SP_EmpleadosVista
+AS
+BEGIN
+	SELECT * FROM Perfil
+END
+GO
+
+
 EXEC SP_InsertPersonas 'Juan', 'Pérez','juan@gmail.com','4454554575'
 EXEC SP_InsertPersonas 'Pedro', 'Villa','pedro@gmail.com','45557454'
 EXEC SP_InsertPersonas 'Joaquin','Piedra','joaquin@gmail.com','454545454'
@@ -133,4 +141,4 @@ EXEC SP_InsertEmpleados 3,1,'',4000,'Activo'
 
 EXEC SP_ValidarEmpleado 1,'Password123'
 
-EXEC SP_Perfil 2
+EXEC SP_EmpleadosVista
