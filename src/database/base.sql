@@ -93,6 +93,7 @@ CREATE OR ALTER PROCEDURE SP_InsertEmpleados(@IdPersona int,@Rol int,@Clave varc
 AS
 BEGIN
 	INSERT INTO Empleados VALUES (@IdPersona,@Rol,@Clave,@Sueldo,@Estatus)
+	SELECT IDENT_CURRENT('Empleados') as Id;
 END
 GO
 
@@ -166,7 +167,7 @@ AS
 BEGIN
 UPDATE  P SET P.Nombre=@Nombre, P.CorreoElectronico = @Correo, P.Telefono = @Telefono from Personas as P INNER JOIN Empleados as E ON E.IdPersona=P.IdPersona WHERE E.IdEmpleado = @Id;
 UPDATE Empleados SET IdRol=@Rol, Sueldo = @Sueldo, Estatus = @Estatus where IdEmpleado = @Id;
-select * From Empleados WHERE IdEmpleado = @Id
+SELECT IDENT_CURRENT('Empleados') as Id;
 END
 GO
 
@@ -197,7 +198,6 @@ EXEC SP_EmpleadosVistaPorNombre 'J'
 EXEC SP_ObtenerRoles
 EXEC SP_AlterEmpleado 1,'Julian Mendoza', 1, 1000, 'Juliansitopa@gmail','4545474986','Activo'
 
-EXEC SP_DeleteEmpleado 4
 
 EXEC SP_Columnas 'EmpleadoCrear'
 
