@@ -1,11 +1,18 @@
 const valorInputBarra = document.getElementById("inputBuscar");
 
+//Titulos
+const tituloPestañaSup = document.getElementById("TituloPestaña").textContent = "Empleados";
+const tituloBodySup = document.getElementById("TituloBody").textContent = "Empleados";
+
+//Funciones
 const stockGetAllData = "SP_EmpleadosVista"
 const stockGetByID = "SP_EmpleadosVistaPorID"
 const stockGetByName = "SP_EmpleadosVistaPorNombre"
 const stockDeleteElement = "SP_DeleteEmpleado"
-const tablaColumnasEditar = "Perfil"
-const tablaColumnasCrear = "EmpleadoCrear"
+const tablaColumnasEditar = "Perfil";
+const rutaEditar = "editarEmpleados"
+const tablaColumnasCrear = "EmpleadoCrear";
+const rutaCrear = "agregarEmplado";
 
 API = "http://localhost:3000/";
 
@@ -55,7 +62,7 @@ async function crearFormularioEditar() {
         }
   });
 
-  document.getElementById("enviarForm").onclick = () => enviarFormulario(IdElemento,"Editar","Empleado","editarEmpleados/",columnas);
+  document.getElementById("enviarForm").onclick = () => enviarFormulario(IdElemento,"Editar","Empleado",`${rutaEditar}/`,columnas);
 
 }
 
@@ -66,9 +73,7 @@ async function crearFormularioCrear() {
   let IdElemento = 0;
 
   document.querySelector(".tituloModal").textContent = Titulo;
-  const resJson = await obtenerColumnas(tablaColumnasEditar) 
-    const valores = await obtenerDatosTablaPorId(valorInputBarra.value); 
-    IdElemento = valores[0].Empleado;
+  const resJson = await obtenerColumnas(tablaColumnasCrear) 
     columnas = resJson.map(objeto => objeto.Columnas);
     console.log(columnas);
     columnas.forEach(elemento => {
@@ -83,7 +88,7 @@ async function crearFormularioCrear() {
           selectRol.id = `in${elemento}`;
           console.log("El id es: "+ `in${elemento}`);
           document.getElementById(elemento).appendChild(selectRol);
-          obtenerOpciones("SP_ObtenerRoles",selectRol,valores[0].Rol);
+          obtenerOpciones("SP_ObtenerRoles",selectRol,"Operador");
         } else if(elemento == "Estatus") {
           const selectEstatus = crearElementoHTML("select");
           selectEstatus.classList.add("form-select","form-control-sm");
@@ -93,7 +98,7 @@ async function crearFormularioCrear() {
           document.getElementById(elemento).appendChild(selectEstatus);
           opcionesSelect2.forEach(valor => {
             const opcion = document.createElement("option");
-            if(valor == valores[0].Estatus) {
+            if(valor == "Activo") {
                 opcion.setAttribute("selected","");
             }
             opcion.value = valor;
@@ -101,12 +106,10 @@ async function crearFormularioCrear() {
             selectEstatus.appendChild(opcion);
           });
         } else {
-          crearInput(elemento,valores[0][`${elemento}`]);
+          crearInput(elemento,"");
         }
   });
-
-  document.getElementById("enviarForm").onclick = () => enviarFormulario(IdElemento,"Editar","Empleado","editarEmpleados/",columnas);
-
+  document.getElementById("enviarForm").onclick = () => enviarFormulario("","Crear","",`${rutaCrear}/`,columnas);
 }
 
 //Funcion para obtener los datos de la tabla
@@ -119,7 +122,8 @@ async function obtenerDatosTabla() {
     console.log(resJson);
     llenarTabla(resJson);
   } else {
-    console.log("NOOO");
+    console.log("No se puedieron obtener");
+    crearAlerta("danger","No se puedieron obtener los datos de la tabla");
   }
 }
 
@@ -200,7 +204,10 @@ async function enviarFormulario(id,accion,nombreId,ruta,columnas) {
   columnas.forEach(columna => {
     if(columna != nombreId) {
       console.log(`in${columna}`);
-      bodyData[columna] =  document.getElementById(`in${columna}`).value;}
+      let columnaActual = document.getElementById(`in${columna}`)
+      bodyData[columna] =  columnaActual.value;
+      columnaActual.remove();
+    }
   });
   console.log(bodyData);
   let res;
@@ -213,7 +220,7 @@ async function enviarFormulario(id,accion,nombreId,ruta,columnas) {
       body: JSON.stringify(bodyData)
   });
   } else if(accion == "Crear") {
-    res = await fetch(API + stock, {
+    res = await fetch(API + ruta, {
       method: "POST",
       headers: {
           "Content-Type": "application/json"
@@ -224,7 +231,11 @@ async function enviarFormulario(id,accion,nombreId,ruta,columnas) {
 
   if (res.ok) {
       const resJson = await res.json();
-      llenarTabla(await obtenerDatosTablaPorId(id));
+      if(accion == "Editar") {
+        llenarTabla(await obtenerDatosTablaPorId(id));
+      } else {
+        llenarTabla(await obtenerDatosTablaPorId(resJson.Id));
+      }
       console.log(resJson);
       crearAlerta("success", "Operacion Completada");
   } else {
