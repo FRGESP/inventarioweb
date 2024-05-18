@@ -8,6 +8,7 @@ async function datosUsuario() {
     document.getElementById("nombreUsuario").textContent = resJson.Nombre;
     document.getElementById("IdEmpleado").value = resJson.Empleado;
     document.getElementById("Rol").value = resJson.Rol;
+    document.getElementById("Sueldo").value = resJson.Sueldo;
     document.getElementById("Estatus").value = resJson.Estatus;
     document.getElementById("Correo").value = resJson.Correo;
     document.getElementById("Telefono").value = resJson.Telefono;

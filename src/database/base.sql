@@ -7,8 +7,7 @@ GO
 
 CREATE TABLE Personas(
 IdPersona int not null Identity,
-Nombre varchar(20) not null,
-Apellidos varchar(30) not null,
+Nombre varchar(80) not null,
 CorreoElectronico varchar(50) not null unique,
 Telefono varchar(15) not null unique,
 CONSTRAINT PK_Personas PRIMARY KEY(IdPersona)
@@ -36,9 +35,13 @@ CONSTRAINT FK_EmpleadosToPersonas FOREIGN KEY(IdPersona) REFERENCES Personas(IdP
 GO
 CREATE OR ALTER VIEW Perfil
 AS
-Select E.IdEmpleado as Empleado, R.Rol,CONCAT(P.Nombre,' ',P.Apellidos) as Nombre, P.CorreoElectronico as Correo, P.Telefono, E.Estatus from Empleados as E INNER JOIN Personas as P on E.IdPersona = P.IdPersona INNER JOIN Roles as R ON E.IdRol = R.IdRol
+Select E.IdEmpleado as Empleado, P.Nombre as Nombre,R.Rol,E.Sueldo, P.CorreoElectronico as Correo, P.Telefono, E.Estatus from Empleados as E INNER JOIN Personas as P on E.IdPersona = P.IdPersona INNER JOIN Roles as R ON E.IdRol = R.IdRol
 Go
 
+CREATE OR ALTER VIEW EmpleadoCrear
+AS
+SELECT IdPersona, IdRol as Rol, Clave,Sueldo,Estatus FROM Empleados
+GO
 ---------------------------------------FUNCIONES-----------------------
 GO
 
@@ -47,7 +50,7 @@ RETURNS VARCHAR(25)
 AS
 BEGIN
 	DECLARE @Valor varchar(20), @ClaveBase varchar(15);
-	SET @Valor = (select P.Apellidos from Empleados as E INNER JOIN Personas as P ON E.IdPersona = P.IdPersona where E.IdEmpleado = @Id)
+	SET @Valor = (select P.Nombre from Empleados as E INNER JOIN Personas as P ON E.IdPersona = P.IdPersona where E.IdEmpleado = @Id)
 	IF @Valor IS NULL
 	BEGIN
 	Return 'NotFound'
@@ -72,10 +75,10 @@ GO
 ---------------------------------------STOCK PROCEDURE-----------------------
 GO
 
-CREATE PROCEDURE SP_InsertPersonas(@Nombre varchar(20), @Apellidos varchar(30), @Correo varchar(25), @Telefono varchar(15))
+CREATE PROCEDURE SP_InsertPersonas(@Nombre varchar(20), @Correo varchar(25), @Telefono varchar(15))
 AS
 BEGIN
-	INSERT INTO Personas VALUES (@Nombre,@Apellidos,@Correo,@Telefono)
+	INSERT INTO Personas VALUES (@Nombre,@Correo,@Telefono)
 END
 Go
 
@@ -93,6 +96,7 @@ BEGIN
 END
 GO
 
+--Login
 CREATE OR ALTER PROCEDURE SP_ValidarEmpleado(@Id int, @Clave varchar(15))
 AS
 BEGIN
@@ -103,6 +107,7 @@ BEGIN
 END
 GO
 
+-- Perfil
 CREATE OR ALTER PROCEDURE SP_Perfil(@Id int)
 AS
 BEGIN
@@ -120,6 +125,7 @@ BEGIN
 END
 GO
 
+--Empleados
 CREATE OR ALTER PROCEDURE SP_EmpleadosVista
 AS
 BEGIN
@@ -127,18 +133,71 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE SP_EmpleadosVistaPorID(@Id int)
+AS
+BEGIN
+	SELECT * FROM Perfil WHERE Empleado = @Id
+END
+GO
 
-EXEC SP_InsertPersonas 'Juan', 'Pérez','juan@gmail.com','4454554575'
-EXEC SP_InsertPersonas 'Pedro', 'Villa','pedro@gmail.com','45557454'
-EXEC SP_InsertPersonas 'Joaquin','Piedra','joaquin@gmail.com','454545454'
+CREATE OR ALTER PROCEDURE SP_EmpleadosVistaPorNombre(@Nombre varchar(50))
+AS
+BEGIN
+	SELECT * FROM Perfil WHERE Nombre Like '%'+@Nombre+'%'
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_Columnas(@Tabla varchar(25))
+AS
+BEGIN
+	SELECT COLUMN_NAME as Columnas FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = @Tabla;
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ObtenerRoles
+AS
+BEGIN
+	SELECT IdRol as Id, Rol as Elemento from Roles
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_AlterEmpleado(@Id int, @Nombre varchar(30), @Rol int, @Sueldo money, @Correo varchar(50),@Telefono varchar(20), @Estatus varchar(20))
+AS
+BEGIN
+UPDATE  P SET P.Nombre=@Nombre, P.CorreoElectronico = @Correo, P.Telefono = @Telefono from Personas as P INNER JOIN Empleados as E ON E.IdPersona=P.IdPersona WHERE E.IdEmpleado = @Id;
+UPDATE Empleados SET IdRol=@Rol, Sueldo = @Sueldo, Estatus = @Estatus where IdEmpleado = @Id;
+select * From Empleados WHERE IdEmpleado = @Id
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_DeleteEmpleado(@Id int)
+AS
+BEGIN
+ DELETE Empleados Where IdEmpleado = @Id
+END
+GO
+
+
+
+EXEC SP_InsertPersonas 'Juan Pérez','juan@gmail.com','4454554575'
+EXEC SP_InsertPersonas 'Pedro Villa','pedro@gmail.com','45557454'
+EXEC SP_InsertPersonas 'Joaquin Piedra','joaquin@gmail.com','454545454'
 
 EXEC SP_InsertRoles 'Gerente'
 EXEC SP_InsertRoles 'Operador'
 
 EXEC SP_InsertEmpleados 1,2,'Password123', 2000, 'Activo'
 EXEC SP_InsertEmpleados 2,1,'Password321',4000,'Activo'
-EXEC SP_InsertEmpleados 3,1,'',4000,'Activo'
+EXEC SP_InsertEmpleados 4,1,'',4000,'Activo'
 
 EXEC SP_ValidarEmpleado 1,'Password123'
 
-EXEC SP_EmpleadosVista
+EXEC SP_EmpleadosVistaPorNombre 'J'
+
+EXEC SP_ObtenerRoles
+EXEC SP_AlterEmpleado 1,'Julian Mendoza', 1, 1000, 'Juliansitopa@gmail','4545474986','Activo'
+
+EXEC SP_DeleteEmpleado 4
+
+EXEC SP_Columnas 'EmpleadoCrear'
+

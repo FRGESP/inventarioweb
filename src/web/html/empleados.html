@@ -26,12 +26,13 @@
     <script id="tabla-template" type="text/x-handlebars-template">
       <div class="row justify-content-center">
         <div class="col-md-11">
-          <table class="table table-striped">
+          <table class="table table-striped" id="tablaPrincipal">
             <thead>
               <tr>
                 <th scope="col">ID de Empleado</th>
                 <th scope="col">Nombre</th>
                 <th scope="col">Rol</th>
+                <th scope="col">Sueldo</th>
                 <th scope="col">Correo</th>
                 <th scope="col">Telefono</th>
                 <th scope="col">Estatus</th>
@@ -43,6 +44,7 @@
                   <th>{{Empleado}}</th>
                   <td>{{Nombre}}</td>
                   <td>{{Rol}}</td>
+                  <td>{{Sueldo}}</td>
                   <td>{{Correo}}</td>
                   <td>{{Telefono}}</td>
                   <td>{{Estatus}}</td>
@@ -52,6 +54,14 @@
           </table>
         </div>
       </div>
+    </script>
+
+    <script id="form-template" type="text/x-handlebars-template">
+      {{#each elementos}}
+        <div class="elementosFormulario" id="{{Columnas}}">
+          <label class="form-labe" id="{{Columnas}}Label">{{Columnas}}:</label>
+        </div>
+      {{/each}}
     </script>
 
     <!-- Termina Aqui -->
@@ -68,6 +78,53 @@
     <!-- Empieza aqui -->
 
     <h1 class="text-center" style="margin-top: 1%">Empleados</h1>
+
+ <!-- Modal -->
+ <div
+ class="modal"
+ id="modalCrearProducto"
+ data-bs-backdrop="static"
+ data-bs-keyboard="false"
+ tabindex="-1"
+ aria-labelledby="staticBackdropLabel"
+ aria-hidden="true"
+>
+ <div class="modal-dialog modal-dialog-centered">
+   <div class="modal-content">
+     <div class="modal-header">
+       <h1 class="modal-title fs-5 tituloModal" id="staticBackdropLabel">
+         Crear Producto
+       </h1>
+       <button
+         type="button"
+         class="btn-close"
+         data-bs-dismiss="modal"
+         aria-label="Close"
+       ></button>
+     </div>
+     <div class="modal-body" id="divModal"></div>
+     <div class="modal-footer">
+       <button
+         type="button"
+         class="btn btn-secondary"
+         data-bs-dismiss="modal"
+       >
+         Cancelar
+       </button>
+       <button
+         type="button"
+         class="btn btn-primary"
+         data-bs-dismiss="modal"
+         id="enviarForm"
+       >
+         Enviar
+       </button>
+     </div>
+   </div>
+ </div>
+</div>
+    <!-- Alertas -->
+    <div id="alertas"></div>
 
     <!-- Barra de busqueda -->
     <div class="container">
@@ -91,7 +148,7 @@
           />
         </div>
         <div class="col-md-auto">
-          <button type="button" class="btn btn-primary" onclick="seleccionID()">
+          <button type="button" class="btn btn-info" onclick="seleccion()">
             Enviar
           </button>
         </div>
@@ -102,7 +159,7 @@
           <button
             id="magia"
             onclick="obtenerDatosTabla()"
-            class="btn btn-warning"
+            class="btn btn-primary"
           >
             Mostrar Todo
           </button>
@@ -112,11 +169,23 @@
           <button
             class="btn btn-success"
             data-bs-target="#modalCrearProducto"
-            onclick="crearFormularioCrearProducto()"
+            onclick="obtenerColumnas()"
             data-bs-toggle="modal"
             data-bs-target="#staticBackdrop"
           >
             <i class="fa-solid fa-plus"></i>
+          </button>
+        </div>
+        <div class="col-md-auto">
+          <button class="btn btn-warning extra" data-bs-target="#modalCrearProducto" onclick="crearFormularioEditar()"
+            data-bs-toggle="modal"
+            data-bs-target="#staticBackdrop" style="display: none;">
+          <i class="fa-solid fa-pen-to-square"></i>
+          </button>
+        </div>
+        <div class="col-md-auto">
+          <button class="btn btn-danger extra" onclick="eliminarElementos()" style="display: none;">
+            <i class="fa-solid fa-trash"></i>
           </button>
         </div>
       </div>

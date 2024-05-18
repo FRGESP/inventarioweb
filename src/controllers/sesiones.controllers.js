@@ -10,16 +10,6 @@ export const auth = async (req,res) => {
     return req.session.user ? res.status(200).send(req.session.user) : res.status(401).send({message : "No autenticado"})
 }
 
-export const nombreEmpleado = async (req,res) => {
-    const pool = await getConnection();
-    console.log(req.session.user);
-    console.log("El id2 "+req.session.id);
-    const result = await pool.request()
-    .input('id',sql.Int,req.session.user)
-    .query("select P.Nombre from Empleados as E INNER JOIN Personas as P ON E.IdPersona = P.IdPersona where E.IdEmpleado = @id")
-
-    return res.json(result.recordset[0]);
-}
 
 export const perfil = async (req,res) => {
     if(!req.session.user){
@@ -70,3 +60,43 @@ export const vistaTablas = async (req,res) => {
     }
 }
 
+export const vistaTablasElemento = async (req,res) => {
+    try {
+        const pool = await getConnection();
+        const procedure = req.params.procedure;
+        const elemento = req.params.elemento;
+        const result = await pool.request()
+        .query(`EXEC ${procedure} ${elemento}`);
+
+        if (result.rowsAffected[0] === 0){
+            return res.status(404).json({message: "Not found"})       
+        } else {
+            return res.json(result.recordset);
+        } 
+    }catch(error) {
+        console.error("Error: ",error.message);
+        return res.status(404).json({message : error.message});
+    }
+}
+
+export const deleteTablas = async (req,res) => {
+    try {
+        const pool = await getConnection();
+
+        const procedure = req.params.procedure;
+        const id = req.params.id;
+
+        const result = await pool.request().query(`EXEC ${procedure} ${id}`)
+        
+        console.log(result);
+
+        if (result.rowsAffected[0] === 0)
+        {
+            return res.status(404).json({message: "Element not found"})
+        }
+        return res.json({message : "Element deleted"});  
+        } catch(error)
+        {
+            console.error("Error:", error.message);
+        }
+}
