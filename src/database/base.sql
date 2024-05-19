@@ -42,6 +42,11 @@ CREATE OR ALTER VIEW EmpleadoCrear
 AS
 SELECT IdPersona, IdRol as Rol, Clave,Sueldo,Estatus FROM Empleados
 GO
+
+CREATE OR ALTER VIEW PersonasVista
+AS
+SELECT IdPersona, Nombre, CorreoElectronico as Correo, Telefono FROM Personas
+GO
 ---------------------------------------FUNCIONES-----------------------
 GO
 
@@ -75,10 +80,11 @@ GO
 ---------------------------------------STOCK PROCEDURE-----------------------
 GO
 
-CREATE PROCEDURE SP_InsertPersonas(@Nombre varchar(20), @Correo varchar(25), @Telefono varchar(15))
+CREATE OR ALTER PROCEDURE SP_InsertPersonas(@Nombre varchar(20), @Correo varchar(25), @Telefono varchar(15))
 AS
 BEGIN
 	INSERT INTO Personas VALUES (@Nombre,@Correo,@Telefono)
+	SELECT IDENT_CURRENT('Personas') as Id;
 END
 Go
 
@@ -177,8 +183,44 @@ BEGIN
  DELETE Empleados Where IdEmpleado = @Id
 END
 GO
+--Personas
+CREATE OR ALTER PROCEDURE SP_PersonasVista
+AS
+BEGIN
+ SELECT * FROM PersonasVista
+END
+GO
+CREATE OR ALTER PROCEDURE SP_PersonasVistaPorID(@Id int)
+AS
+BEGIN
+	SELECT * FROM PersonasVista WHERE IdPersona = @Id
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_PersonasVistaPorNombre(@Nombre varchar(50))
+AS
+BEGIN
+	SELECT * FROM PersonasVista WHERE Nombre Like '%'+@Nombre+'%'
+END
+GO
 
 
+CREATE OR ALTER PROCEDURE SP_UdatePersona(@Id int, @Nombre varchar(30), @Correo varchar(50),@Telefono varchar(20))
+AS
+BEGIN
+UPDATE Personas SET Nombre=@Nombre, CorreoElectronico=@Correo,Telefono = @Telefono where IdPersona=@Id;
+SELECT IDENT_CURRENT('Personas') as Id;
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_DeletePersona(@Id int)
+AS
+BEGIN
+ DELETE Personas Where IdPersona = @Id
+END
+GO
+
+select * from Personas
 
 EXEC SP_InsertPersonas 'Juan Pérez','juan@gmail.com','4454554575'
 EXEC SP_InsertPersonas 'Pedro Villa','pedro@gmail.com','45557454'
@@ -199,5 +241,5 @@ EXEC SP_ObtenerRoles
 EXEC SP_AlterEmpleado 1,'Julian Mendoza', 1, 1000, 'Juliansitopa@gmail','4545474986','Activo'
 
 
-EXEC SP_Columnas 'EmpleadoCrear'
+EXEC SP_PersonasVista
 

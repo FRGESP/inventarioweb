@@ -41,7 +41,7 @@
             <tbody id="tabla">
               {{#each elementos}}
                 <tr>
-                  <th>{{Empleado}}</th>
+                  <div><th><button type="button" class="btn btn-light" onclick="botonesID(this)" id="{{Empleado}}" >{{Empleado}}</button></th></div>
                   <td>{{Nombre}}</td>
                   <td>{{Rol}}</td>
                   <td>{{Sueldo}}</td>
@@ -149,7 +149,7 @@
         </div>
         <div class="col-md-auto">
           <button type="button" class="btn btn-info" onclick="seleccion()">
-            Enviar
+            <i class="fa-solid fa-magnifying-glass"></i>
           </button>
         </div>
         <div class="col-md-auto">

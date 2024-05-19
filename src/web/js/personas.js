@@ -1,37 +1,41 @@
 const valorInputBarra = document.getElementById("inputBuscar");
 
 //Titulos
-const tituloPestañaSup = document.getElementById("TituloPestaña").textContent = "Empleados";
-const tituloBodySup = document.getElementById("TituloBody").textContent = "Empleados";
+const tituloPestañaSup = document.getElementById("TituloPestaña").textContent = "Personas";
+const tituloBodySup = document.getElementById("TituloBody").textContent = "Personas";
 
 //Funciones
-const stockGetAllData = "SP_EmpleadosVista"
-const stockGetByID = "SP_EmpleadosVistaPorID"
-const stockGetByName = "SP_EmpleadosVistaPorNombre"
-const stockDeleteElement = "SP_DeleteEmpleado"
-const tablaColumnasEditar = "Perfil";
-const rutaEditar = "editarEmpleados"
-const tablaColumnasCrear = "EmpleadoCrear";
-const rutaCrear = "agregarEmplado";
+const stockGetAllData = "SP_PersonasVista"
+const stockGetByID = "SP_PersonasVistaPorID"
+const stockGetByName = "SP_PersonasVistaPorNombre"
+const stockDeleteElement = "SP_DeletePersona"
+const tablaColumnasEditar = "PersonasVista";
+const rutaEditar = "editarPersonas"
+const tablaColumnasCrear = "PersonasVista";
+const rutaCrear = "agregarPersona";
 
 API = "http://localhost:3000/";
 
 //Funcion para crear el formulario para editar
 async function crearFormularioEditar() {
-  const Titulo = "Editar Empleado"
+  const Titulo = "Editar Persona"
+  const nombreDelId = "IdPersona"
+  const etiquetaDelID = "Persona"
   const opcionesSelect2 = ["Activo","Despedido","Ausente"];
   let IdElemento = 0;
 
   document.querySelector(".tituloModal").textContent = Titulo;
   const resJson = await obtenerColumnas(tablaColumnasEditar) 
     const valores = await obtenerDatosTablaPorId(valorInputBarra.value); 
-    IdElemento = valores[0].Empleado;
+    IdElemento = valores[0][`${nombreDelId}`];
     columnas = resJson.map(objeto => objeto.Columnas);
     console.log(columnas);
     columnas.forEach(elemento => {
       console.log(elemento);
-      if(elemento == "Empleado") {
-        document.getElementById("EmpleadoLabel").textContent = `Empleado: ${IdElemento}`;
+      if(elemento == nombreDelId) {
+        const etiquetaBase = document.getElementById(`${nombreDelId}`);
+        etiquetaBase.textContent = `${etiquetaDelID}: ${IdElemento}`;
+        etiquetaBase.classList.add("text-center");
       } else if(elemento == "Rol")
         {
           const selectRol = crearElementoHTML("select");
@@ -61,16 +65,15 @@ async function crearFormularioEditar() {
           crearInput(elemento,valores[0][`${elemento}`]);
         }
   });
-
-  document.getElementById("enviarForm").onclick = () => enviarFormulario(IdElemento,"Editar","Empleado",`${rutaEditar}/`,columnas);
+  document.getElementById("enviarForm").onclick = () => enviarFormulario(IdElemento,"Editar",nombreDelId,`${rutaEditar}/`,columnas);
 
 }
 
 //Funcion para crear el formulario para crear
 async function crearFormularioCrear() {
-  const Titulo = "Agregar Empleado"
+ const Titulo = "Agregar Persona"
+  const nombreDelId = "IdPersona"
   const opcionesSelect2 = ["Activo","Despedido","Ausente"];
-  let IdElemento = 0;
 
   document.querySelector(".tituloModal").textContent = Titulo;
   const resJson = await obtenerColumnas(tablaColumnasCrear) 
@@ -78,8 +81,9 @@ async function crearFormularioCrear() {
     console.log(columnas);
     columnas.forEach(elemento => {
       console.log(elemento);
-      if(elemento == "Empleado") {
-        document.getElementById("EmpleadoLabel").textContent = `Empleado: ${IdElemento}`;
+      if(elemento == nombreDelId) {
+        const etiquetaBase = document.getElementById(`${nombreDelId}`);
+        etiquetaBase.remove();
       } else if(elemento == "Rol")
         {
           const selectRol = crearElementoHTML("select");
@@ -109,7 +113,7 @@ async function crearFormularioCrear() {
           crearInput(elemento,"");
         }
   });
-  document.getElementById("enviarForm").onclick = () => enviarFormulario("","Crear","",`${rutaCrear}/`,columnas);
+  document.getElementById("enviarForm").onclick = () => enviarFormulario("","Crear",nombreDelId,`${rutaCrear}/`,columnas);
 }
 
 //Funcion para obtener los datos de la tabla
@@ -374,6 +378,6 @@ $("#selectBuscar").on("change keyup paste", function(){
 })
 
 function botonesID(boton) {
-  valorInputBarra.value = boton.id;
-  document.getElementById("selectBuscar").value = "ID";
+    valorInputBarra.value = boton.id;
+    document.getElementById("selectBuscar").value = "ID";
 }
