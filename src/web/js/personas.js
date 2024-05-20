@@ -6,7 +6,7 @@ const tituloBodySup = document.getElementById("TituloBody").textContent = "Perso
 
 //Funciones
 const stockGetAllData = "SP_PersonasVista"
-const stockGetByID = "SP_PersonasVistaPorID"
+let stockGetByID = "SP_PersonasVistaPorID"
 const stockGetByName = "SP_PersonasVistaPorNombre"
 const stockDeleteElement = "SP_DeletePersona"
 const tablaColumnasEditar = "PersonasVista";
@@ -36,15 +36,15 @@ async function crearFormularioEditar() {
         const etiquetaBase = document.getElementById(`${nombreDelId}`);
         etiquetaBase.textContent = `${etiquetaDelID}: ${IdElemento}`;
         etiquetaBase.classList.add("text-center");
-      } else if(elemento == "Rol")
+      } else if(elemento == "Direccion")
         {
-          const selectRol = crearElementoHTML("select");
-          selectRol.classList.add("form-select","form-control-sm");
-          selectRol.setAttribute("aria-label","Default select example");
-          selectRol.id = `in${elemento}`;
+          const selectDireccion = crearElementoHTML("select");
+          selectDireccion.classList.add("form-select","form-control-sm");
+          selectDireccion.setAttribute("aria-label","Default select example");
+          selectDireccion.id = `in${elemento}`;
           console.log("El id es: "+ `in${elemento}`);
-          document.getElementById(elemento).appendChild(selectRol);
-          obtenerOpciones("SP_ObtenerRoles",selectRol,valores[0].Rol);
+          document.getElementById(elemento).appendChild(selectDireccion);
+          obtenerOpciones("SP_ObtenerDirecciones",selectDireccion,valores[0].Rol);
         } else if(elemento == "Estatus") {
           const selectEstatus = crearElementoHTML("select");
           selectEstatus.classList.add("form-select","form-control-sm");
@@ -84,15 +84,15 @@ async function crearFormularioCrear() {
       if(elemento == nombreDelId) {
         const etiquetaBase = document.getElementById(`${nombreDelId}`);
         etiquetaBase.remove();
-      } else if(elemento == "Rol")
+      } else if(elemento == "Direccion")
         {
-          const selectRol = crearElementoHTML("select");
-          selectRol.classList.add("form-select","form-control-sm");
-          selectRol.setAttribute("aria-label","Default select example");
-          selectRol.id = `in${elemento}`;
+          const selectDireccion = crearElementoHTML("select");
+          selectDireccion.classList.add("form-select","form-control-sm");
+          selectDireccion.setAttribute("aria-label","Default select example");
+          selectDireccion.id = `in${elemento}`;
           console.log("El id es: "+ `in${elemento}`);
-          document.getElementById(elemento).appendChild(selectRol);
-          obtenerOpciones("SP_ObtenerRoles",selectRol,"Operador");
+          document.getElementById(elemento).appendChild(selectDireccion);
+          obtenerOpciones("SP_ObtenerDirecciones",selectDireccion,"");
         } else if(elemento == "Estatus") {
           const selectEstatus = crearElementoHTML("select");
           selectEstatus.classList.add("form-select","form-control-sm");
@@ -380,4 +380,50 @@ $("#selectBuscar").on("change keyup paste", function(){
 function botonesID(boton) {
     valorInputBarra.value = boton.id;
     document.getElementById("selectBuscar").value = "ID";
+}
+
+async function botonesDirecciones(boton) {
+
+  const Titulo = "Información Direcciones"
+  const nombreDelId = "IdDireccion"
+  const etiquetaDelID = "Dirección"
+  let IdElemento = 0;
+  
+  document.querySelector(".tituloModal").textContent = Titulo;
+  const resJson = await obtenerColumnas("VistaDirecciones") 
+  let variable = stockGetByID;
+  stockGetByID = "SP_MostrarDireccion"
+    const valores = await obtenerDatosTablaPorId(boton.id); 
+    deshabilitarElementos();
+    stockGetByID = variable;
+    IdElemento = valores[0][`${nombreDelId}`];
+    columnas = resJson.map(objeto => objeto.Columnas);
+    columnas.forEach(elemento => {
+      console.log(elemento);
+      if(elemento == nombreDelId) {
+        const etiquetaBase = document.getElementById(`${nombreDelId}`);
+        etiquetaBase.textContent = `${etiquetaDelID}: ${IdElemento}`;
+        etiquetaBase.classList.add("text-center");
+      } else {
+        // crearInput(elemento,valores[0][`${elemento}`]);
+        const etiqueta = document.getElementById(elemento);
+        const input = crearElementoHTML("input");
+        input.classList.add("form-control");
+        input.value = valores[0][`${elemento}`];
+        input.setAttribute("Disabled","");
+        etiqueta.appendChild(input);
+      }
+  });
+
+  document.getElementById("okButton").textContent = "OK";
+  document.getElementById("enviarForm").style.display = "none";
+  document.getElementById("closeButton").style.display = "none";
+  document.getElementById("okButton").onclick = () => {
+    document.getElementById("closeButton").setAttribute.display = "";
+    document.getElementById("enviarForm").style.display = "";
+    document.getElementById("okButton").textContent = "Cancelar";
+    document.getElementById("closeButton").style.display = "";
+    document.getElementById("divModal").innerHTML = "";
+  };
+
 }

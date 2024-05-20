@@ -4,7 +4,6 @@ async function datosUsuario() {
   const res = await fetch(API + "datos");
   if (res.ok) {
     const resJson = await res.json();
-    console.log("si entra pafdfdf");
     document.getElementById("nombreUsuario").textContent = resJson.Nombre;
     document.getElementById("IdEmpleado").value = resJson.Empleado;
     document.getElementById("Rol").value = resJson.Rol;
@@ -12,6 +11,7 @@ async function datosUsuario() {
     document.getElementById("Estatus").value = resJson.Estatus;
     document.getElementById("Correo").value = resJson.Correo;
     document.getElementById("Telefono").value = resJson.Telefono;
+    document.getElementById("Sucursal").value = resJson.Sucursal;
   } else {
     console.log("Sesion cerrada");
   }

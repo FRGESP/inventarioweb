@@ -36,6 +36,7 @@
                 <th scope="col">Correo</th>
                 <th scope="col">Telefono</th>
                 <th scope="col">Estatus</th>
+                <th scope="col">Sucursal</th>
               </tr>
             </thead>
             <tbody id="tabla">
@@ -48,6 +49,7 @@
                   <td>{{Correo}}</td>
                   <td>{{Telefono}}</td>
                   <td>{{Estatus}}</td>
+                  <td>{{Sucursal}}</td>
                 </tr>
               {{/each}}
             </tbody>
@@ -134,7 +136,7 @@
         </div>
         <div class="col-md-auto">
           <select class="form-select" id="selectBuscar">
-            <option selected>Seleccione una opción</option>
+            <option value="seleccion" selected>Seleccione una opción</option>
             <option value="Nombre">Nombre</option>
             <option value="ID">ID</option>
           </select>

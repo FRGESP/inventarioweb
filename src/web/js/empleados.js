@@ -8,7 +8,6 @@ const tituloBodySup = document.getElementById("TituloBody").textContent = "Emple
 const stockGetAllData = "SP_EmpleadosVista"
 const stockGetByID = "SP_EmpleadosVistaPorID"
 const stockGetByName = "SP_EmpleadosVistaPorNombre"
-const stockDeleteElement = "SP_DeleteEmpleado"
 const tablaColumnasEditar = "Perfil";
 const rutaEditar = "editarEmpleados"
 const tablaColumnasCrear = "EmpleadoCrear";
@@ -31,7 +30,9 @@ async function crearFormularioEditar() {
     columnas.forEach(elemento => {
       console.log(elemento);
       if(elemento == "Empleado") {
-        document.getElementById("EmpleadoLabel").textContent = `Empleado: ${IdElemento}`;
+        const etiquetaBase = document.getElementById("EmpleadoLabel");
+        etiquetaBase.textContent = `Empleado: ${IdElemento}`;
+        etiquetaBase.classList.add("text-center");
       } else if(elemento == "Rol")
         {
           const selectRol = crearElementoHTML("select");
@@ -57,7 +58,17 @@ async function crearFormularioEditar() {
             opcion.textContent = valor;
             selectEstatus.appendChild(opcion);
           });
-        } else {
+        } else if (elemento == "Sucursal") {
+          const selectSucursal = crearElementoHTML("select");
+          selectSucursal.classList.add("form-select","form-control-sm");
+          selectSucursal.setAttribute("aria-label","Default select example");
+          selectSucursal.id = `in${elemento}`;
+          console.log("El id es: "+ `in${elemento}`);
+          document.getElementById(elemento).appendChild(selectSucursal);
+          obtenerOpciones("SP_ObtenerSucursales",selectSucursal,valores[0].Sucursal);
+        } 
+        
+        else{
           crearInput(elemento,valores[0][`${elemento}`]);
         }
   });
@@ -79,7 +90,9 @@ async function crearFormularioCrear() {
     columnas.forEach(elemento => {
       console.log(elemento);
       if(elemento == "Empleado") {
-        document.getElementById("EmpleadoLabel").textContent = `Empleado: ${IdElemento}`;
+        const etiquetaBase = document.getElementById("EmpleadoLabel");
+        etiquetaBase.textContent = `Empleado: ${IdElemento}`;
+        etiquetaBase.classList.add("text-center");
       } else if(elemento == "Rol")
         {
           const selectRol = crearElementoHTML("select");
@@ -105,7 +118,15 @@ async function crearFormularioCrear() {
             opcion.textContent = valor;
             selectEstatus.appendChild(opcion);
           });
-        } else {
+        } else if (elemento == "Sucursal") {
+          const selectSucursal = crearElementoHTML("select");
+          selectSucursal.classList.add("form-select","form-control-sm");
+          selectSucursal.setAttribute("aria-label","Default select example");
+          selectSucursal.id = `in${elemento}`;
+          console.log("El id es: "+ `in${elemento}`);
+          document.getElementById(elemento).appendChild(selectSucursal);
+          obtenerOpciones("SP_ObtenerSucursales",selectSucursal,"");
+        }  else {
           crearInput(elemento,"");
         }
   });
@@ -131,7 +152,7 @@ async function obtenerDatosTabla() {
 
 //Funcion para borrar los elementos de la tabla
 async function eliminarElementos() {
-  const res = await fetch(`${API}deleteTablas/${stockDeleteElement}/${valorInputBarra.value}`, {
+  const res = await fetch(`${API}deleteEmpleado/${valorInputBarra.value}`, {
     method : "DELETE",
     headers: {
       "Content-Type": "application/json"
@@ -142,7 +163,10 @@ async function eliminarElementos() {
     crearAlerta("success","Elemento Eliminado");
     obtenerDatosTabla();
     valorInputBarra.value = "";
-  } else {
+  } else if (res.status == 400){
+    crearAlerta("warning","No se puede eliminar a si mismo");
+  }
+    else{
     crearAlerta("danger","No se ha podido eliminar el elemento");
   }
 }

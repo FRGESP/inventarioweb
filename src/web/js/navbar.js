@@ -4,7 +4,6 @@ async function cargar() {
   const res = await fetch(API + "datos");
   if (res.ok) {
     const resJson = await res.json();
-    console.log("si entra pafdfdf");
     document.getElementById("usuario").textContent = resJson.Nombre;
     if(resJson.Rol == 'Gerente') {
         const elementos = document.querySelectorAll(".Gerente");

@@ -33,6 +33,7 @@
                 <th scope="col">Nombre</th>
                 <th scope="col">Correo</th>
                 <th scope="col">Teléfono</th>
+                <th scope="col">IdDireccion</th>
               </tr>
             </thead>
             <tbody id="tabla">
@@ -42,6 +43,9 @@
                   <td>{{Nombre}}</td>
                   <td>{{Correo}}</td>
                   <td>{{Telefono}}</td>
+                  <div><th><button type="button" class="btn btn-light" data-bs-target="#modalCrearProducto" onclick="botonesDirecciones(this)"
+                    data-bs-toggle="modal"
+                    data-bs-target="#staticBackdrop" id="{{Direccion}}" >{{Direccion}}</button></th></div>
                 </tr>
               {{/each}}
             </tbody>
@@ -93,7 +97,7 @@
          type="button"
          class="btn-close"
          data-bs-dismiss="modal"
-         aria-label="Close"
+         aria-label="Close" id="closeButton"
        ></button>
      </div>
      <div class="modal-body" id="divModal"></div>
@@ -101,7 +105,7 @@
        <button
          type="button"
          class="btn btn-secondary"
-         data-bs-dismiss="modal"
+         data-bs-dismiss="modal" id="okButton"
        >
          Cancelar
        </button>

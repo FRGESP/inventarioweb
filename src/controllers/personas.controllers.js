@@ -10,7 +10,8 @@ export const updatePersona = async (req, res) => {
         .input('Correo',sql.VarChar,req.body.Correo)
         .input('Nombre',sql.VarChar,req.body.Nombre)
         .input('Telefono',sql.VarChar,req.body.Telefono)
-        .query("EXEC SP_UdatePersona @id, @Nombre, @Correo, @Telefono ");
+        .input('Direccion',sql.Int,req.body.Direccion)
+        .query("EXEC SP_UdatePersona @id, @Nombre, @Correo, @Telefono, @Direccion");
         console.log(result);
         if (result.rowsAffected[0] === 0)
         {
@@ -35,7 +36,8 @@ export const addPersona = async (req, res) => {
         .input('Correo',sql.VarChar,req.body.Correo)
         .input('Nombre',sql.VarChar,req.body.Nombre)
         .input('Telefono',sql.VarChar,req.body.Telefono)
-        .query("EXEC SP_InsertPersonas @Nombre, @Correo, @Telefono ");
+        .input('Direccion',sql.Int,req.body.Direccion)
+        .query("EXEC SP_InsertPersonas @Nombre, @Correo, @Telefono, @Direccion");
         console.log(result);
         if (result.rowsAffected[0] === 0)
         {
