@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://kit.fontawesome.com/0caab475fe.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+
+    <!-- Tabla empieza aqui -->
+
+    <script id="tabla-template" type="text/x-handlebars-template">
+      <div class="row justify-content-center">
+        <div class="col-md-11">
+          <table class="table table-striped" id="tablaPrincipal">
+            <thead>
+              <tr>
+                <th scope="col">ID Dirección</th>
+                <th scope="col">País</th>
+                <th scope="col">Código Postal</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Municipio</th>
+                <th scope="col">Colonia</th>
+                <th scope="col">Calle</th>
+              </tr>
+            </thead>
+            <tbody id="tabla">
+              {{#each elementos}}
+                <tr>
+                  <div><th><button type="button" class="btn btn-light" onclick="botonesID(this)" id="{{IdDireccion}}" >{{IdDireccion}}</button></th></div>
+                  <td>{{Pais}}</td>
+                  <td>{{CodigoPostal}}</td>
+                  <td>{{Estado}}</td>
+                  <td>{{Municipio}}</td>
+                  <td>{{Colonia}}</td>
+                  <td>{{Calle}}</td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </script>
+
+    <script id="form-template" type="text/x-handlebars-template">
+      {{#each elementos}}
+        <div class="elementosFormulario" id="{{Columnas}}">
+          <label class="form-labe" id="{{Columnas}}Label">{{Columnas}}:</label>
+        </div>
+      {{/each}}
+    </script>
+
+    <!-- Termina Aqui -->
+
+    <title id="TituloPestaña"></title>
+  </head>
+  <body onload="cargar(); obtenerDatosTabla()">
+    <div id="nav-placeholder"></div>
+    <script>
+      $(function () {
+        $("#nav-placeholder").load("navbar");
+      });
+    </script>
+    <!-- Empieza aqui -->
+
+    <h1 class="text-center" style="margin-top: 1%" id="TituloBody"></h1>
+
+ <!-- Modal -->
+ <div
+ class="modal"
+ id="modalCrearProducto"
+ data-bs-backdrop="static"
+ data-bs-keyboard="false"
+ tabindex="-1"
+ aria-labelledby="staticBackdropLabel"
+ aria-hidden="true"
+>
+ <div class="modal-dialog modal-dialog-centered">
+   <div class="modal-content">
+     <div class="modal-header">
+       <h1 class="modal-title fs-5 tituloModal" id="staticBackdropLabel">
+         Crear Producto
+       </h1>
+       <button
+         type="button"
+         class="btn-close"
+         data-bs-dismiss="modal"
+         aria-label="Close"
+       ></button>
+     </div>
+     <div class="modal-body" id="divModal"></div>
+     <div class="modal-footer">
+       <button
+         type="button"
+         class="btn btn-secondary"
+         data-bs-dismiss="modal"
+       >
+         Cancelar
+       </button>
+       <button
+         type="button"
+         class="btn btn-primary"
+         data-bs-dismiss="modal"
+         id="enviarForm"
+       >
+         Enviar
+       </button>
+     </div>
+   </div>
+ </div>
+</div>
+    <!-- Alertas -->
+    <div id="alertas"></div>
+
+    <!-- Barra de busqueda -->
+    <div class="container">
+      <div class="row justify-content-center text-center">
+        <div class="col-md-auto">
+          <h3 class="mb-3">Buscar por:</h3>
+        </div>
+        <div class="col-md-auto">
+          <select class="form-select" id="selectBuscar">
+            <option value="seleccion" selected>Seleccione una opción</option>
+            <option value="Nombre">Nombre</option>
+            <option value="ID">ID</option>
+          </select>
+        </div>
+        <div class="col-md-auto">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Ingrese un valor"
+            id="inputBuscar"
+          />
+        </div>
+        <div class="col-md-auto">
+          <button type="button" class="btn btn-info" onclick="seleccion()">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+        </div>
+        <div class="col-md-auto">
+          <h3>||</h3>
+        </div>
+        <div class="col-md-auto">
+          <button
+            id="magia"
+            onclick="obtenerDatosTabla()"
+            class="btn btn-primary"
+          >
+            Mostrar Todo
+          </button>
+        </div>
+
+        <div class="col-md-auto">
+          <button
+            class="btn btn-success"
+            data-bs-target="#modalCrearProducto"
+            onclick="crearFormularioCrear()"
+            data-bs-toggle="modal"
+            data-bs-target="#staticBackdrop"
+          >
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </div>
+        <div class="col-md-auto">
+          <button class="btn btn-warning extra" data-bs-target="#modalCrearProducto" onclick="crearFormularioEditar()"
+            data-bs-toggle="modal"
+            data-bs-target="#staticBackdrop" style="display: none;">
+          <i class="fa-solid fa-pen-to-square"></i>
+          </button>
+        </div>
+        <div class="col-md-auto">
+          <button class="btn btn-danger extra" onclick="eliminarElementos()" style="display: none;">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Div de la tabla -->
+    <div id="tabla-container" style="margin-top: 2%"></div>
+    <!-- ----- -->
+
+    <script src="./../js/navbar.js"></script>
+    <!-- Cambiar este -->
+    <script src="./../js/direcciones.js"></script>
+  </body>
+</html>

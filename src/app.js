@@ -6,6 +6,7 @@ import sesionesRutas from './routes/sesiones.route.js'
 import perfilRutas from './routes/perfil.route.js'
 import empleadosRutas from './routes/empleados.routes.js'
 import personasRuta from './routes/personas.routes.js'
+import direccionesRutas from './routes/direcciones.route.js'
 import session from 'express-session';
 import path from 'path';
 
@@ -35,6 +36,7 @@ app.use(sesionesRutas);
 app.use(perfilRutas);
 app.use(empleadosRutas);
 app.use(personasRuta);
+app.use(direccionesRutas);
 
 app.use(express.static(path.join(__dirname, 'src', 'web')));
 

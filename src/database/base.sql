@@ -31,24 +31,25 @@ CREATE TABLE Municipios
 	constraint FK_estadoTOmunicipio foreign key(IdEstado) references Estados(IdEstado) on delete cascade,
 );
 
-CREATE TABLE Colonias
-(
-	IdColonia int identity(1,1) not null,
-	NombreColonia varchar(50),
-	IdMunicipio int not null,
-	D_CP int not null,
-	constraint PK_colonia primary key(IdColonia),
-	constraint FK_municipioTOcolonia foreign key(IdMunicipio) references Municipios(IdMunicipio) on delete cascade,
-);
-
 CREATE TABLE CodigosPostales
 (
 	IdCodigoPostal int identity(1,1) not null,
 	CodigoPostal int not null,
-	IdColonia int not null,
+	IdMunicipio int not null,
 	constraint PK_CodigoPostal primary key(IdCodigoPostal),
-	constraint FK_coloniaTOcodigopostal foreign key(IdColonia) references Colonias(IdColonia) on delete cascade,
+	constraint FK_municipioTOcodigopostal foreign key(IdMunicipio) references Municipios(IdMunicipio) on delete cascade,
 );
+
+CREATE TABLE Colonias
+(
+	IdColonia int identity(1,1) not null,
+	NombreColonia varchar(50),
+	IdCodigoPostal int not null,
+	constraint PK_colonia primary key(IdColonia),
+	constraint FK_CodigosPostalesTOcolonia foreign key(IdCodigoPostal) references CodigosPostales(IdCodigoPostal) on delete cascade,
+);
+
+
 
 CREATE TABLE Direcciones (
     IdDireccion INT IDENTITY(1,1) NOT NULL,
@@ -186,8 +187,8 @@ CONSTRAINT FK_TicketsToSucursales FOREIGN KEY(Sucursal) REFERENCES Sucursales(Id
 insert into Paises values('Mexico');
 insert into Estados select distinct d_estado, 1 from Guanajuato$ where d_estado is not null;
 insert into Municipios (nombreMunicipio,idEstado)  select DISTINCT G.D_mnpio, E.idEstado   from Guanajuato$ as G inner join Estados as E on G.d_estado = E.nombreEstado ;
-insert into Colonias (nombreColonia, idMunicipio,D_CP) select G.d_asenta, M.idMunicipio ,G.d_CP from Guanajuato$ as G inner join Municipios as M on G.D_mnpio = M.nombreMunicipio;
-insert into CodigosPostales (codigoPostal,idColonia) select DISTINCT G.d_codigo, C.idColonia from Guanajuato$ as G inner join Colonias as C on G.d_asenta = C.nombreColonia AND G.d_CP = C.D_CP;
+insert into CodigosPostales (codigoPostal,idMunicipio) select DISTINCT G.d_codigo, M.idMunicipio from Guanajuato$ as G inner join Municipios as M on G.D_mnpio = M.nombreMunicipio;
+insert into Colonias (nombreColonia, idCodigoPostal) select DISTINCT G.d_asenta, CP.idCodigoPostal from Guanajuato$ as G inner join CodigosPostales as CP on G.d_codigo = CP.CodigoPostal;
 ---------------------------------------VISTAS-----------------------
 GO 
 CREATE OR ALTER VIEW Perfil
@@ -207,8 +208,10 @@ GO
 
 CREATE OR ALTER VIEW VistaDirecciones
 AS
-SELECT D.IdDireccion,P.NombrePais as Pais, E.NombreEstado as Estado, M.NombreMunicipio as Municipio, CP.CodigoPostal, D.Calle FROM Direcciones as D INNER JOIN Paises as P ON D.IdPais = P.IdPais INNER JOIN Estados as E ON E.IdEstado = D.IdEstado INNER JOIN Municipios as M ON M.IdMunicipio = D.IdMunicipio INNER JOIN Colonias as C ON C.IdColonia = D.IdColonia INNER JOIN CodigosPostales as CP ON CP.IdCodigoPostal = D.IdCodigoPostal;
+SELECT D.IdDireccion,P.NombrePais as Pais,  CP.CodigoPostal,E.NombreEstado as Estado, M.NombreMunicipio as Municipio, C.NombreColonia as Colonia,D.Calle FROM Direcciones as D INNER JOIN Paises as P ON D.IdPais = P.IdPais INNER JOIN Estados as E ON E.IdEstado = D.IdEstado INNER JOIN Municipios as M ON M.IdMunicipio = D.IdMunicipio INNER JOIN Colonias as C ON C.IdColonia = D.IdColonia INNER JOIN CodigosPostales as CP ON CP.IdCodigoPostal = D.IdCodigoPostal;
 GO
+
+
 ---------------------------------------FUNCIONES-----------------------
 GO
 
@@ -245,10 +248,10 @@ GO
 CREATE OR ALTER PROCEDURE SP_CodigoPostal(@CP int)
 AS
 BEGIN
-select P.NombrePais as Pais, E.NombreEstado as Estado, M.NombreMunicipio as Municipio, C.NombreColonia as Colonia, CP.CodigoPostal as CP from Paises as P inner join Estados as E on P.IdPais = E.IdPais
+select P.NombrePais as Pais, E.nombreEstado as Estado, M.NombreMunicipio as Municipio, C.IdColonia as Id,C.NombreColonia as Elemento, CP.CodigoPostal as CP from Paises as P inner join Estados as E on P.IdPais = E.IdPais
 inner join Municipios as M on E.IdEstado = M.IdEstado
-inner join Colonias as C on M.IdMunicipio = C.IdMunicipio
-inner join CodigosPostales as CP on C.IdColonia = CP.IdColonia
+inner join CodigosPostales as CP on M.IdMunicipio = CP.IdMunicipio
+inner join Colonias as C on CP.IdCodigoPostal = C.IdCodigoPostal
 where CP.CodigoPostal = @CP;
 END
 GO
@@ -300,6 +303,13 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE SP_MostrarDirecciones
+AS
+BEGIN
+	
+	SELECT * from VistaDirecciones
+END
+GO
 
 --Login
 CREATE OR ALTER PROCEDURE SP_ValidarEmpleado(@Id int, @Clave varchar(15))
@@ -423,7 +433,6 @@ BEGIN
 END
 GO
 
-
 CREATE OR ALTER PROCEDURE SP_UdatePersona(@Id int, @Nombre varchar(30), @Correo varchar(50),@Telefono varchar(20), @Direccion int)
 AS
 BEGIN
@@ -439,14 +448,51 @@ BEGIN
 END
 GO
 
-select * from Personas
+-- Direcciones
 
-EXEC SP_InsertDireccion 1, 1, 20, 10472, 1805, 'Vallarta 78'
-EXEC SP_InsertDireccion 1, 1, 13, 22, 23, 'Puebla 45'
-EXEC SP_InsertDireccion 1, 1, 15, 10472, 2220, 'Satelite 25'
-EXEC SP_InsertDireccion 1, 1, 20, 1637, 1805, 'Morelos 74'
-EXEC SP_InsertDireccion 1, 1, 13, 22, 23, 'Aguascalientes 52'
-EXEC SP_InsertDireccion 1, 1, 15, 2043, 2220, 'Guerrero 58'
+CREATE OR ALTER PROCEDURE SP_AgregarDireccion(@Codigo int, @Colonia int, @Calle varchar(100))
+AS
+BEGIN
+	Declare @IdCodigo int, @IdPais int, @IdEstado int, @IdMunicipio int;
+	SET @IdCodigo = (SELECT IdCodigoPostal FROM CodigosPostales WHERE CodigoPostal = @Codigo);
+	SET @IdMunicipio = (SELECT IdMunicipio FROM CodigosPostales WHERE IdCodigoPostal = @IdCodigo);
+	SET @IdEstado = (SELECT IdEstado FROM Municipios WHERE IdMunicipio = @IdMunicipio);
+	SET @IdPais = (SELECT IdPais FROM Estados WHERE IdEstado = @IdEstado);
+
+	INSERT INTO DIRECCIONES VALUES (@IdPais,@IdEstado,@IdMunicipio,@Colonia,@IdCodigo,@Calle);
+	SELECT IDENT_CURRENT('Direcciones') as Id;
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_DeleteDireccion (@Id int)
+AS
+BEGIN
+ DELETE Direcciones Where IdDireccion = @Id
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_UdateDirecciones(@Id int , @Codigo int, @Colonia int, @Calle varchar(100))
+AS
+BEGIN
+	Declare @IdCodigo int, @IdPais int, @IdEstado int, @IdMunicipio int;
+	SET @IdCodigo = (SELECT IdCodigoPostal FROM CodigosPostales WHERE CodigoPostal = @Codigo);
+	SET @IdMunicipio = (SELECT IdMunicipio FROM CodigosPostales WHERE IdCodigoPostal = @IdCodigo);
+	SET @IdEstado = (SELECT IdEstado FROM Municipios WHERE IdMunicipio = @IdMunicipio);
+	SET @IdPais = (SELECT IdPais FROM Estados WHERE IdEstado = @IdEstado);
+
+	UPDATE DIRECCIONES SET IdPais = @IdPais,IdEstado = @IdEstado, IdMunicipio = @IdMunicipio, IdColonia = @Colonia, IdCodigoPostal = @IdCodigo, Calle = @Calle where IdDireccion=@Id;
+	SELECT IDENT_CURRENT('Direcciones') as Id;
+END
+GO
+
+select * from Direcciones
+
+EXEC SP_InsertDireccion 1, 1, 20, 6487, 1276, 'Vallarta 78'
+EXEC SP_InsertDireccion 1, 1, 15, 586, 350, 'Puebla 45'
+EXEC SP_InsertDireccion 1, 1, 2, 8638, 1262, 'Satelite 25'
+EXEC SP_InsertDireccion 1, 1, 20, 6487, 1276, 'Morelos 74'
+EXEC SP_InsertDireccion 1, 1, 15, 586, 350, 'Aguascalientes 52'
+EXEC SP_InsertDireccion 1, 1, 2, 8638, 1262, 'Guerrero 58'
 
 EXEC SP_InsertSucursal 'Sucursal Morelos',4
 EXEC SP_InsertSucursal 'Sucursal Aguascalientes',5
@@ -463,12 +509,6 @@ EXEC SP_InsertEmpleados 1,2,'Password123', 2000, 'Activo',1
 EXEC SP_InsertEmpleados 2,1,'Password321',4000,'Activo',2
 EXEC SP_InsertEmpleados 3,1,'',4000,'Activo',3
 
-EXEC SP_ValidarEmpleado 1,'Password123'
-
-EXEC SP_EmpleadosVistaPorNombre 'J'
-
-EXEC SP_ObtenerRoles
-EXEC SP_AlterEmpleado 1,'Julian Mendoza', 1, 1000, 'Juliansitopa@gmail','4545474986','Activo'
 
  
 
@@ -482,10 +522,11 @@ select * from CodigosPostales where CodigoPostal = 38800
 
 select * From Guanajuato$  
 
-select P.NombrePais as Pais, E.nombreEstado as Estado, M.NombreMunicipio as Municipio, C.NombreColonia as Colonia, CP.IdCodigoPostal as CP from Paises as P inner join Estados as E on P.IdPais = E.IdPais
+select P.IdPais as Pais, E.IdEstado as Estado, M.IdMunicipio as Municipio, C.IdColonia as Colonia, CP.IdCodigoPostal as CP from Paises as P inner join Estados as E on P.IdPais = E.IdPais
 inner join Municipios as M on E.IdEstado = M.IdEstado
-inner join Colonias as C on M.IdMunicipio = C.IdMunicipio
-inner join CodigosPostales as CP on C.IdColonia = CP.IdColonia
-where CP.CodigoPostal = 36486;
+inner join CodigosPostales as CP on M.IdMunicipio = CP.IdMunicipio
+inner join Colonias as C on CP.IdCodigoPostal = C.IdCodigoPostal
+where CP.CodigoPostal = 38800;
 
-select * from Sucursales
+
+
