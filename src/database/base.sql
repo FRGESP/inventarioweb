@@ -44,9 +44,9 @@ CREATE TABLE Colonias
 (
 	IdColonia int identity(1,1) not null,
 	NombreColonia varchar(50),
-	IdCodigoPostal int not null,
+	IdCodigoPostal int,
 	constraint PK_colonia primary key(IdColonia),
-	constraint FK_CodigosPostalesTOcolonia foreign key(IdCodigoPostal) references CodigosPostales(IdCodigoPostal) on delete cascade,
+	constraint FK_CodigosPostalesTOcolonia foreign key(IdCodigoPostal) references CodigosPostales(IdCodigoPostal) on delete set default,
 );
 
 
@@ -104,6 +104,7 @@ CONSTRAINT FK_EmpleadosToRoles FOREIGN KEY(IdRol) REFERENCES Roles(IdRol) ON DEL
 CONSTRAINT FK_EmpleadosToPersonas FOREIGN KEY(IdPersona) REFERENCES Personas(IdPersona) ON DELETE CASCADE,
 CONSTRAINT FK_EmpleadosToSucursales FOREIGN KEY(Sucursal) REFERENCES Sucursales(IdSucursal) ON DELETE CASCADE
 );
+
 
 CREATE TABLE Clientes(
 IdCliente int not null IDENTITY,
@@ -211,7 +212,12 @@ AS
 SELECT D.IdDireccion,P.NombrePais as Pais,  CP.CodigoPostal,E.NombreEstado as Estado, M.NombreMunicipio as Municipio, C.NombreColonia as Colonia,D.Calle FROM Direcciones as D INNER JOIN Paises as P ON D.IdPais = P.IdPais INNER JOIN Estados as E ON E.IdEstado = D.IdEstado INNER JOIN Municipios as M ON M.IdMunicipio = D.IdMunicipio INNER JOIN Colonias as C ON C.IdColonia = D.IdColonia INNER JOIN CodigosPostales as CP ON CP.IdCodigoPostal = D.IdCodigoPostal;
 GO
 
+CREATE OR ALTER VIEW VistaSucursales
+AS
+SELECT S.IdSucursal, S.Nombre, S.IdDireccion,COUNT(E.IdEmpleado) as CantidadEmpleados,  AVG(E.Sueldo) as AvgSueldo, MAX(E.Sueldo) AS SueldoMax FROM Sucursales as S LEFT JOIN Empleados as E ON S.IdSucursal = E.Sucursal GROUP BY S.IdSucursal, S.Nombre, S.IdDireccion
+GO
 
+SELECT IdEmpleado,MAX(Sueldo) from Empleados Group by IdEmpleado
 ---------------------------------------FUNCIONES-----------------------
 GO
 
@@ -485,7 +491,44 @@ BEGIN
 END
 GO
 
-select * from Direcciones
+-- Sucursales
+
+CREATE OR ALTER PROCEDURE SP_SucursalesVista
+AS
+BEGIN
+ SELECT * FROM VistaSucursales
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_DireccionesVistaPorID(@Id int)
+AS
+BEGIN
+	SELECT * FROM VistaSucursales WHERE IdSucursal = @Id
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_DireccionesVistaPorNombre(@Nombre varchar(50))
+AS
+BEGIN
+	SELECT * FROM VistaSucursales WHERE Nombre Like '%'+@Nombre+'%'
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_DeleteSucursal(@Id int)
+AS
+BEGIN
+ DELETE Sucursales Where IdSucursal= @Id
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_UdateSucursal(@Id int, @Nombre varchar(30),@Direccion int)
+AS
+BEGIN
+UPDATE Sucursales SET Nombre=@Nombre, IdDireccion = @Direccion where IdSucursal=@Id;
+SELECT IDENT_CURRENT('Sucursales') as Id;
+END
+GO
+
 
 EXEC SP_InsertDireccion 1, 1, 20, 6487, 1276, 'Vallarta 78'
 EXEC SP_InsertDireccion 1, 1, 15, 586, 350, 'Puebla 45'
@@ -512,7 +555,7 @@ EXEC SP_InsertEmpleados 3,1,'',4000,'Activo',3
 
  
 
-select * From Estados
+select * From Empleados
 
 select * From Guanajuato$ where d_asenta = 'San Javier'
 
@@ -527,6 +570,3 @@ inner join Municipios as M on E.IdEstado = M.IdEstado
 inner join CodigosPostales as CP on M.IdMunicipio = CP.IdMunicipio
 inner join Colonias as C on CP.IdCodigoPostal = C.IdCodigoPostal
 where CP.CodigoPostal = 38800;
-
-
-

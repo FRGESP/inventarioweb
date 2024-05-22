@@ -29,27 +29,25 @@
           <table class="table table-striped" id="tablaPrincipal">
             <thead>
               <tr>
-                <th scope="col">ID de Empleado</th>
+                <th scope="col">ID Sucursal</th>
                 <th scope="col">Nombre</th>
-                <th scope="col">Rol</th>
-                <th scope="col">Sueldo</th>
-                <th scope="col">Correo</th>
-                <th scope="col">Telefono</th>
-                <th scope="col">Estatus</th>
-                <th scope="col">Sucursal</th>
+                <th scope="col">Dirección</th>
+                <th scope="col">Cantidad de Empleados</th>
+                <th scope="col">Sueldo Promedio</th>
+                <th scope="col">Sueldo Máximo</th>
               </tr>
             </thead>
             <tbody id="tabla">
               {{#each elementos}}
                 <tr>
-                  <div><th><button type="button" class="btn btn-light" onclick="botonesID(this)" id="{{Empleado}}" >{{Empleado}}</button></th></div>
+                  <div><th><button type="button" class="btn btn-light" onclick="botonesID(this)" id="{{IdSucursal}}" >{{IdSucursal}}</button></th></div>
                   <td>{{Nombre}}</td>
-                  <td>{{Rol}}</td>
-                  <td>${{Sueldo}}</td>
-                  <td>{{Correo}}</td>
-                  <td>{{Telefono}}</td>
-                  <td>{{Estatus}}</td>
-                  <td>{{Sucursal}}</td>
+                  <div><th><button type="button" class="btn btn-light" data-bs-target="#modalCrearProducto" onclick="botonesDirecciones(this)"
+                    data-bs-toggle="modal"
+                    data-bs-target="#staticBackdrop" id="{{IdDireccion}}" >{{IdDireccion}}</button></th></div>
+                  <td>{{CantidadEmpleados}}</td>
+                  <td>${{AvgSueldo}}</td>
+                  <td>${{SueldoMax}}</td>
                 </tr>
               {{/each}}
             </tbody>
@@ -101,7 +99,7 @@
          type="button"
          class="btn-close"
          data-bs-dismiss="modal"
-         aria-label="Close"
+         aria-label="Close" id="closeButton"
        ></button>
      </div>
      <div class="modal-body" id="divModal"></div>
@@ -109,7 +107,7 @@
        <button
          type="button"
          class="btn btn-secondary"
-         data-bs-dismiss="modal"
+         data-bs-dismiss="modal" id="okButton"
        >
          Cancelar
        </button>
@@ -199,6 +197,6 @@
 
     <script src="./../js/navbar.js"></script>
     <!-- Cambiar este -->
-    <script src="./../js/empleados.js"></script>
+    <script src="./../js/sucursales.js"></script>
   </body>
 </html>

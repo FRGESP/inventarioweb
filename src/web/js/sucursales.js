@@ -1,27 +1,26 @@
 const valorInputBarra = document.getElementById("inputBuscar");
 
 //Titulos
-const tituloPestañaSup = document.getElementById("TituloPestaña").textContent = "Personas";
-const tituloBodySup = document.getElementById("TituloBody").textContent = "Personas";
+const tituloPestañaSup = document.getElementById("TituloPestaña").textContent = "Sucursales";
+const tituloBodySup = document.getElementById("TituloBody").textContent = "Sucursales";
 
 //Funciones
-const stockGetAllData = "SP_PersonasVista"
-let stockGetByID = "SP_PersonasVistaPorID"
-const stockGetByName = "SP_PersonasVistaPorNombre"
-const stockDeleteElement = "SP_DeletePersona"
-const tablaColumnasEditar = "PersonasVista";
-const rutaEditar = "editarPersonas"
-const tablaColumnasCrear = "PersonasVista";
-const rutaCrear = "agregarPersona";
+const stockGetAllData = "SP_SucursalesVista"
+let stockGetByID = "SP_DireccionesVistaPorID"
+const stockGetByName = "SP_DireccionesVistaPorNombre"
+const stockDeleteElement = "SP_DeleteSucursal"
+const tablaColumnasEditar = "Sucursales";
+const rutaEditar = "editarSucursal"
+const tablaColumnasCrear = "Sucursales";
+const rutaCrear = "agregarSucursal";
 
 API = "http://localhost:3000/";
 
 //Funcion para crear el formulario para editar
 async function crearFormularioEditar() {
-  const Titulo = "Editar Persona"
-  const nombreDelId = "IdPersona"
-  const etiquetaDelID = "Persona"
-  const opcionesSelect2 = ["Activo","Despedido","Ausente"];
+  const Titulo = "Editar Sucursal"
+  const nombreDelId = "IdSucursal"
+  const etiquetaDelID = "Sucursal"
   let IdElemento = 0;
 
   document.querySelector(".tituloModal").textContent = Titulo;
@@ -36,7 +35,7 @@ async function crearFormularioEditar() {
         const etiquetaBase = document.getElementById(`${nombreDelId}`);
         etiquetaBase.textContent = `${etiquetaDelID}: ${IdElemento}`;
         etiquetaBase.classList.add("text-center");
-      } else if(elemento == "Direccion")
+      } else if(elemento == "IdDireccion")
         {
           const selectDireccion = crearElementoHTML("select");
           selectDireccion.classList.add("form-select","form-control-sm");
@@ -44,24 +43,7 @@ async function crearFormularioEditar() {
           selectDireccion.id = `in${elemento}`;
           console.log("El id es: "+ `in${elemento}`);
           document.getElementById(elemento).appendChild(selectDireccion);
-          console.log("La direccion es"+valores[0].Direccion);
-          obtenerOpciones("SP_ObtenerDirecciones",selectDireccion,valores[0].Direccion);
-        } else if(elemento == "Estatus") {
-          const selectEstatus = crearElementoHTML("select");
-          selectEstatus.classList.add("form-select","form-control-sm");
-          selectEstatus.setAttribute("aria-label","Default select example");
-          selectEstatus.id = `in${elemento}`;
-          console.log("El id es: "+ `in${elemento}`);
-          document.getElementById(elemento).appendChild(selectEstatus);
-          opcionesSelect2.forEach(valor => {
-            const opcion = document.createElement("option");
-            if(valor == valores[0].Estatus) {
-                opcion.setAttribute("selected","");
-            }
-            opcion.value = valor;
-            opcion.textContent = valor;
-            selectEstatus.appendChild(opcion);
-          });
+          obtenerOpciones("SP_ObtenerDirecciones",selectDireccion,valores[0].IdDireccion);
         } else {
           crearInput(elemento,valores[0][`${elemento}`]);
         }
@@ -72,9 +54,8 @@ async function crearFormularioEditar() {
 
 //Funcion para crear el formulario para crear
 async function crearFormularioCrear() {
- const Titulo = "Agregar Persona"
-  const nombreDelId = "IdPersona"
-  const opcionesSelect2 = ["Activo","Despedido","Ausente"];
+ const Titulo = "Agregar Sucursal"
+  const nombreDelId = "IdSucursal"
 
   document.querySelector(".tituloModal").textContent = Titulo;
   const resJson = await obtenerColumnas(tablaColumnasCrear) 
@@ -85,7 +66,7 @@ async function crearFormularioCrear() {
       if(elemento == nombreDelId) {
         const etiquetaBase = document.getElementById(`${nombreDelId}`);
         etiquetaBase.remove();
-      } else if(elemento == "Direccion")
+      } else if(elemento == "IdDireccion")
         {
           const selectDireccion = crearElementoHTML("select");
           selectDireccion.classList.add("form-select","form-control-sm");
@@ -94,22 +75,6 @@ async function crearFormularioCrear() {
           console.log("El id es: "+ `in${elemento}`);
           document.getElementById(elemento).appendChild(selectDireccion);
           obtenerOpciones("SP_ObtenerDirecciones",selectDireccion,"");
-        } else if(elemento == "Estatus") {
-          const selectEstatus = crearElementoHTML("select");
-          selectEstatus.classList.add("form-select","form-control-sm");
-          selectEstatus.setAttribute("aria-label","Default select example");
-          selectEstatus.id = `in${elemento}`;
-          console.log("El id es: "+ `in${elemento}`);
-          document.getElementById(elemento).appendChild(selectEstatus);
-          opcionesSelect2.forEach(valor => {
-            const opcion = document.createElement("option");
-            if(valor == "Activo") {
-                opcion.setAttribute("selected","");
-            }
-            opcion.value = valor;
-            opcion.textContent = valor;
-            selectEstatus.appendChild(opcion);
-          });
         } else {
           crearInput(elemento,"");
         }
@@ -331,7 +296,6 @@ async function obtenerOpciones(stock,select,actual) {
       resJson.forEach(valor => {
           const opcion = document.createElement("option");
           if(valor.Id == actual) {
-            
               opcion.setAttribute("selected","");
           }
           opcion.value = valor.Id;
@@ -386,46 +350,46 @@ function botonesID(boton) {
 
 async function botonesDirecciones(boton) {
 
-  const Titulo = "Información Direcciones"
-  const nombreDelId = "IdDireccion"
-  const etiquetaDelID = "Dirección"
-  let IdElemento = 0;
+    const Titulo = "Información Direcciones"
+    const nombreDelId = "IdDireccion"
+    const etiquetaDelID = "IdDirección"
+    let IdElemento = 0;
+    
+    document.querySelector(".tituloModal").textContent = Titulo;
+    const resJson = await obtenerColumnas("VistaDirecciones") 
+    let variable = stockGetByID;
+    stockGetByID = "SP_MostrarDireccion"
+      const valores = await obtenerDatosTablaPorId(boton.id); 
+      deshabilitarElementos();
+      stockGetByID = variable;
+      IdElemento = valores[0][`${nombreDelId}`];
+      columnas = resJson.map(objeto => objeto.Columnas);
+      columnas.forEach(elemento => {
+        console.log(elemento);
+        if(elemento == nombreDelId) {
+          const etiquetaBase = document.getElementById(`${nombreDelId}`);
+          etiquetaBase.textContent = `${etiquetaDelID}: ${IdElemento}`;
+          etiquetaBase.classList.add("text-center");
+        } else {
+          // crearInput(elemento,valores[0][`${elemento}`]);
+          const etiqueta = document.getElementById(elemento);
+          const input = crearElementoHTML("input");
+          input.classList.add("form-control");
+          input.value = valores[0][`${elemento}`];
+          input.setAttribute("Disabled","");
+          etiqueta.appendChild(input);
+        }
+    });
   
-  document.querySelector(".tituloModal").textContent = Titulo;
-  const resJson = await obtenerColumnas("VistaDirecciones") 
-  let variable = stockGetByID;
-  stockGetByID = "SP_MostrarDireccion"
-    const valores = await obtenerDatosTablaPorId(boton.id); 
-    deshabilitarElementos();
-    stockGetByID = variable;
-    IdElemento = valores[0][`${nombreDelId}`];
-    columnas = resJson.map(objeto => objeto.Columnas);
-    columnas.forEach(elemento => {
-      console.log(elemento);
-      if(elemento == nombreDelId) {
-        const etiquetaBase = document.getElementById(`${nombreDelId}`);
-        etiquetaBase.textContent = `${etiquetaDelID}: ${IdElemento}`;
-        etiquetaBase.classList.add("text-center");
-      } else {
-        // crearInput(elemento,valores[0][`${elemento}`]);
-        const etiqueta = document.getElementById(elemento);
-        const input = crearElementoHTML("input");
-        input.classList.add("form-control");
-        input.value = valores[0][`${elemento}`];
-        input.setAttribute("Disabled","");
-        etiqueta.appendChild(input);
-      }
-  });
-
-  document.getElementById("okButton").textContent = "OK";
-  document.getElementById("enviarForm").style.display = "none";
-  document.getElementById("closeButton").style.display = "none";
-  document.getElementById("okButton").onclick = () => {
-    document.getElementById("closeButton").setAttribute.display = "";
-    document.getElementById("enviarForm").style.display = "";
-    document.getElementById("okButton").textContent = "Cancelar";
-    document.getElementById("closeButton").style.display = "";
-    document.getElementById("divModal").innerHTML = "";
-  };
-
-}
+    document.getElementById("okButton").textContent = "OK";
+    document.getElementById("enviarForm").style.display = "none";
+    document.getElementById("closeButton").style.display = "none";
+    document.getElementById("okButton").onclick = () => {
+      document.getElementById("closeButton").setAttribute.display = "";
+      document.getElementById("enviarForm").style.display = "";
+      document.getElementById("okButton").textContent = "Cancelar";
+      document.getElementById("closeButton").style.display = "";
+      document.getElementById("divModal").innerHTML = "";
+    };
+  
+  }
