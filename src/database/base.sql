@@ -222,6 +222,11 @@ AS
 SELECT C.IdCategoria, C.Categoria,COUNT(P.IdCategoria) as CantidadProductos,  AVG(P.PrecioVenta) as AvgPrecio, MAX(P.PrecioVenta) AS PrecioMax FROM Productos as P RIGHT JOIN Categorias as C ON P.IdCategoria = C.IdCategoria GROUP BY C.IdCategoria, C.Categoria
 GO
 
+CREATE OR ALTER VIEW VistaProveedores
+AS
+SELECT Pr.IdProveedor, Pr.Proveedor,Pr.Telefono,Pr.IdDireccion, COUNT(P.IdProveedor) as CantidadProductos,  AVG(P.PrecioVenta) as AvgPrecio, MAX(P.PrecioVenta) AS PrecioMax FROM Productos as P RIGHT JOIN Proveedores as Pr ON P.IdProveedor = Pr.IdProveedor GROUP BY Pr.IdProveedor, Pr.Proveedor, Pr.IdDireccion,Pr.Telefono, Pr.IdDireccion
+GO
+
 select * from Categorias
 ---------------------------------------FUNCIONES-----------------------
 GO
@@ -595,6 +600,43 @@ BEGIN
 
 END
 GO
+
+CREATE OR ALTER PROCEDURE SP_ProveedoresVista
+AS
+BEGIN
+ SELECT * FROM VistaProveedores
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ProveedoresVistaPorID(@Id int)
+AS
+BEGIN
+	SELECT * FROM VistaProveedores WHERE IdProveedor = @Id
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ProveedoresVistaPorNombre(@Nombre varchar(50))
+AS
+BEGIN
+	SELECT * FROM VistaProveedores WHERE Proveedor Like '%'+@Nombre+'%'
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_DeleteProveedor (@Id int)
+AS
+BEGIN
+ DELETE Proveedores Where IdProveedor = @Id
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_UpdateProveedor(@Id int, @Proveedor varchar(30), @Telefono varchar(12),@IdDireccion int)
+AS
+BEGIN
+UPDATE Proveedores SET Proveedor=@Proveedor, Telefono =  @Telefono, IdDireccion = @IdDireccion  where IdProveedor=@Id;
+SELECT IDENT_CURRENT('Proveedores') as Id;
+END
+GO
+
 select * from Proveedores
 
 -- Productos

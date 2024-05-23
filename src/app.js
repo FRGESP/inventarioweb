@@ -9,6 +9,7 @@ import personasRuta from './routes/personas.routes.js'
 import direccionesRutas from './routes/direcciones.route.js'
 import sucursalesRutas from './routes/sucursales.routes.js'
 import categoriasRutas from './routes/categorias.routes.js'
+import proveedoresRutas from './routes/proveedores.routes.js'
 import session from 'express-session';
 import path from 'path';
 
@@ -41,6 +42,7 @@ app.use(personasRuta);
 app.use(direccionesRutas);
 app.use(sucursalesRutas);
 app.use(categoriasRutas);
+app.use(proveedoresRutas);
 
 app.use(express.static(path.join(__dirname, 'src', 'web')));
 
