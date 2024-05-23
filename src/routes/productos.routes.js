@@ -1,12 +1,10 @@
 import { Router } from "express";
-import { getProduct, getProducts } from "../controllers/productos.controllers.js";
+import { addProducto,updateProducto } from "../controllers/productos.controllers.js";
 
 const router = Router();
 
-router.get('/productos',getProducts);
-router.get('/productos/:id',getProduct)
+router.put("/editarProductos/:id",updateProducto);
 
-
-router.post('/productos',)
+router.post("/agregarProducto",addProducto);
 
 export default router;

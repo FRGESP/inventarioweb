@@ -137,8 +137,10 @@ PrecioVenta money not null check(PrecioVenta>=0),
 Stock int default 0 not null check(Stock>=0),
 IdProveedor int not null,
 CONSTRAINT PK_Productos PRIMARY KEY(IdProducto),
-CONSTRAINT FK_ProductosToProveedores FOREIGN KEY(IdProveedor) references Proveedores(IdProveedor) on delete cascade
+CONSTRAINT FK_ProductosToProveedores FOREIGN KEY(IdProveedor) references Proveedores(IdProveedor) on delete cascade,
+CONSTRAINT FK_ProductosToCategorias FOREIGN KEY(IdCategoria) references Categorias(IdCategoria) on delete cascade
 );
+
 
 CREATE TABLE RegistroProductos(
 IdRegistro int not null IDENTITY,
@@ -225,6 +227,11 @@ GO
 CREATE OR ALTER VIEW VistaProveedores
 AS
 SELECT Pr.IdProveedor, Pr.Proveedor,Pr.Telefono,Pr.IdDireccion, COUNT(P.IdProveedor) as CantidadProductos,  AVG(P.PrecioVenta) as AvgPrecio, MAX(P.PrecioVenta) AS PrecioMax FROM Productos as P RIGHT JOIN Proveedores as Pr ON P.IdProveedor = Pr.IdProveedor GROUP BY Pr.IdProveedor, Pr.Proveedor, Pr.IdDireccion,Pr.Telefono, Pr.IdDireccion
+GO
+
+CREATE OR ALTER VIEW VistaProductos
+AS
+SELECT P.IdProducto, P.Nombre, C.Categoria, P.PrecioCompra, P.PrecioVenta, P.Stock, Pr.Proveedor FROM Productos AS P LEFT JOIN Categorias AS C ON P.IdCategoria = C.IdCategoria INNER JOIN Proveedores as Pr ON P.IdProveedor = Pr.IdProveedor
 GO
 
 select * from Categorias
@@ -652,6 +659,71 @@ CREATE OR ALTER PROCEDURE  SP_InsertProductos(
 AS
 BEGIN
     INSERT into Productos VALUES(@producto,@idCategoria,@precioCompra,@precioVenta,@stock,@idProveedor)
+	SELECT IDENT_CURRENT('Productos') as Id;
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ProductosVista
+AS
+BEGIN
+ SELECT * FROM VistaProductos
+ END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ProductosVistaPorID(@Id int)
+AS
+BEGIN
+	SELECT * FROM VistaProductos WHERE IdProducto = @Id
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ProductosVistaPorNombre(@Nombre varchar(50))
+AS
+BEGIN
+	SELECT * FROM VistaProductos WHERE Nombre Like '%'+@Nombre+'%'
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ProductosVistaPorCategoria(@Id int)
+AS
+BEGIN
+SELECT P.IdProducto, P.Nombre, C.Categoria, C.IdCategoria, P.PrecioCompra, P.PrecioVenta, P.Stock, Pr.Proveedor FROM Productos AS P LEFT JOIN Categorias AS C ON P.IdCategoria = C.IdCategoria INNER JOIN Proveedores as Pr ON P.IdProveedor = Pr.IdProveedor where C.IdCategoria  = @Id
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ProductosVistaPorProveedor(@Id int)
+AS
+BEGIN
+SELECT P.IdProducto, P.Nombre, C.Categoria, C.IdCategoria, P.PrecioCompra, P.PrecioVenta, P.Stock, Pr.Proveedor, Pr.IdProveedor FROM Productos AS P LEFT JOIN Categorias AS C ON P.IdCategoria = C.IdCategoria INNER JOIN Proveedores as Pr ON P.IdProveedor = Pr.IdProveedor where Pr.IdProveedor  = @Id
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_DeleteProducto (@Id int)
+AS
+BEGIN
+ DELETE Productos Where IdProducto = @Id
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_UpdateProducto(@Id int, @Nombre varchar(30), @IdCategoria int,@PrecioCompra money, @PrecioVenta money, @Stock int, @IdProveedor int)
+AS
+BEGIN
+UPDATE Productos SET Nombre=@Nombre, IdCategoria =  @IdCategoria, PrecioCompra = @PrecioCompra, PrecioVenta = @PrecioVenta, Stock = @Stock, IdProveedor = @IdProveedor  where IdProducto=@Id;
+SELECT IDENT_CURRENT('Productos') as Id;
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ObtenerCategorias
+AS
+BEGIN
+	SELECT IdCategoria Id, Categoria as Elemento from Categorias
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ObtenerProveedores
+AS
+BEGIN
+	SELECT IdProveedor Id, Proveedor as Elemento from Proveedores
 END
 GO
 
