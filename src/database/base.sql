@@ -217,7 +217,12 @@ AS
 SELECT S.IdSucursal, S.Nombre, S.IdDireccion,COUNT(E.IdEmpleado) as CantidadEmpleados,  AVG(E.Sueldo) as AvgSueldo, MAX(E.Sueldo) AS SueldoMax FROM Sucursales as S LEFT JOIN Empleados as E ON S.IdSucursal = E.Sucursal GROUP BY S.IdSucursal, S.Nombre, S.IdDireccion
 GO
 
-SELECT IdEmpleado,MAX(Sueldo) from Empleados Group by IdEmpleado
+CREATE OR ALTER VIEW VistaCategorias
+AS
+SELECT C.IdCategoria, C.Categoria,COUNT(P.IdCategoria) as CantidadProductos,  AVG(P.PrecioVenta) as AvgPrecio, MAX(P.PrecioVenta) AS PrecioMax FROM Productos as P RIGHT JOIN Categorias as C ON P.IdCategoria = C.IdCategoria GROUP BY C.IdCategoria, C.Categoria
+GO
+
+select * from Categorias
 ---------------------------------------FUNCIONES-----------------------
 GO
 
@@ -529,6 +534,84 @@ SELECT IDENT_CURRENT('Sucursales') as Id;
 END
 GO
 
+-- Categorias
+CREATE OR ALTER PROCEDURE sp_insertCategoria(
+    @categoria varchar(50)
+)
+AS
+BEGIN
+    INSERT into Categorias VALUES (@categoria);
+	SELECT IDENT_CURRENT('Categorias') as Id;
+
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_CategoriasVista
+AS
+BEGIN
+ SELECT * FROM VistaCategorias
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_CategoriasVistaPorID(@Id int)
+AS
+BEGIN
+	SELECT * FROM VistaCategorias WHERE IdCategoria = @Id
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_CategoriasVistaPorNombre(@Nombre varchar(50))
+AS
+BEGIN
+	SELECT * FROM VistaCategorias WHERE Categoria Like '%'+@Nombre+'%'
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_DeleteCategoria (@Id int)
+AS
+BEGIN
+ DELETE Categorias Where IdCategoria = @Id
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_UpdateCategoria(@Id int, @Categoria varchar(30))
+AS
+BEGIN
+UPDATE Categorias SET Categoria=@Categoria where IdCategoria=@Id;
+SELECT IDENT_CURRENT('Categorias') as Id;
+END
+GO
+
+-- Proveedores
+
+CREATE OR ALTER PROCEDURE sp_insertProveedor(
+    @proveedor varchar(50),
+    @telefono varchar(10), @direccion int
+)
+AS
+BEGIN
+    INSERT into Proveedores VALUES(@proveedor,@telefono,@direccion)
+	SELECT IDENT_CURRENT('Proveedores') as Id;
+
+END
+GO
+select * from Proveedores
+
+-- Productos
+GO
+CREATE OR ALTER PROCEDURE  SP_InsertProductos(
+    @producto varchar(50),
+    @idCategoria int,
+	@precioCompra money,
+    @precioVenta money,
+    @stock int,
+	@idProveedor int
+)
+AS
+BEGIN
+    INSERT into Productos VALUES(@producto,@idCategoria,@precioCompra,@precioVenta,@stock,@idProveedor)
+END
+GO
 
 EXEC SP_InsertDireccion 1, 1, 20, 6487, 1276, 'Vallarta 78'
 EXEC SP_InsertDireccion 1, 1, 15, 586, 350, 'Puebla 45'
@@ -536,6 +619,13 @@ EXEC SP_InsertDireccion 1, 1, 2, 8638, 1262, 'Satelite 25'
 EXEC SP_InsertDireccion 1, 1, 20, 6487, 1276, 'Morelos 74'
 EXEC SP_InsertDireccion 1, 1, 15, 586, 350, 'Aguascalientes 52'
 EXEC SP_InsertDireccion 1, 1, 2, 8638, 1262, 'Guerrero 58'
+EXEC SP_AgregarDireccion 37000, 844, 'Avenida Insurgentes 132'
+EXEC SP_AgregarDireccion 36500,3510, 'Hidalgo 78'
+EXEC SP_AgregarDireccion 38010, 149, 'La Piedra 58'
+EXEC SP_AgregarDireccion 36000, 3302, 'Independencia 98'
+EXEC SP_AgregarDireccion 36700, 8051, 'Pipila 53'
+EXEC SP_AgregarDireccion 37000, 844, 'Avenida Las Flores 87'
+EXEC SP_AgregarDireccion 36433, 1513, 'Avenida Los Castores 85'
 
 EXEC SP_InsertSucursal 'Sucursal Morelos',4
 EXEC SP_InsertSucursal 'Sucursal Aguascalientes',5
@@ -552,10 +642,42 @@ EXEC SP_InsertEmpleados 1,2,'Password123', 2000, 'Activo',1
 EXEC SP_InsertEmpleados 2,1,'Password321',4000,'Activo',2
 EXEC SP_InsertEmpleados 3,1,'',4000,'Activo',3
 
+EXEC sp_insertCategoria 'Tarjetas de video'
+EXEC sp_insertCategoria 'Tarjetas Madre'
+EXEC sp_insertCategoria 'Procesadores'
+EXEC sp_insertCategoria 'Memorias RAM'
+EXEC sp_insertCategoria 'Almacenamiento'
+EXEC sp_insertCategoria 'Accesorios'
 
- 
+EXEC sp_insertProveedor 'NVIDIA', '4859641235', 7
+EXEC sp_insertProveedor 'ASUS', '4631287543',8
+EXEC sp_insertProveedor 'Intel','4879641576',9
+EXEC sp_insertProveedor 'Kingston', '4879674216',10
+EXEC sp_insertProveedor 'Razer', '4268746972',11
+EXEC sp_insertProveedor 'AMD', '4875219684',12
+EXEC sp_insertProveedor 'Corsair', '4526971237', 13
 
-select * From Empleados
+EXEC SP_InsertProductos 'NVIDIA GeForce RTX 4090', 1, 35000, 42000, 15, 1
+EXEC SP_InsertProductos 'NVIDIA GeForce RTX 3070', 1, 22000, 26400, 30, 1
+EXEC SP_InsertProductos 'NVIDIA GeForce RTX 3060', 1, 15000, 18000, 40, 1
+EXEC SP_InsertProductos 'AMD Radeon RX 7900 XTX0', 1, 28000, 33600, 20,6
+EXEC SP_InsertProductos 'ASUS ROG Crosshair VIII Hero', 2, 7000,8400,35,2
+EXEC SP_InsertProductos 'ASUS Prime Z490-A',2, 4800, 5760, 45, 2
+EXEC SP_InsertProductos 'Intel Core i9-13900K', 3, 12000, 14400, 25, 3
+EXEC SP_InsertProductos 'Intel Core i7-13700K', 3, 9000, 10800, 30, 3
+EXEC SP_InsertProductos 'AMD Ryzen 7 7840HS', 3, 8400, 9500, 22, 6
+EXEC SP_InsertProductos 'Corsair Vengeance 16GB DDR4', 4, 1800, 2160, 80,7
+EXEC SP_InsertProductos 'Corsair Dominator 32GB DDR4', 4, 5500, 6600, 70, 7
+EXEC SP_InsertProductos 'Corsair Vengeance LPX 32GB DDR4', 4, 3600, 4320, 60,7
+EXEC SP_InsertProductos 'Kingston A2000 1TB NVMe M.2 SSD', 5, 2200, 2640, 65, 4
+EXEC SP_InsertProductos 'Kingston KC2500 1TB NVMe M.2 SSD', 5, 3000, 3600, 50, 4
+EXEC SP_InsertProductos 'Kingston DataTraveler 100 G3 128GB USB', 5, 400, 480, 100, 4
+EXEC SP_InsertProductos 'Razer BlackWidow Keyboard', 6, 3000, 3600, 40, 5
+EXEC SP_InsertProductos 'Razer DeathAdder V2 Mouse', 6, 1500,1800, 60,5
+
+select * From Categorias
+select * From Proveedores
+select * From Productos
 
 select * From Guanajuato$ where d_asenta = 'San Javier'
 
@@ -569,4 +691,6 @@ select P.IdPais as Pais, E.IdEstado as Estado, M.IdMunicipio as Municipio, C.IdC
 inner join Municipios as M on E.IdEstado = M.IdEstado
 inner join CodigosPostales as CP on M.IdMunicipio = CP.IdMunicipio
 inner join Colonias as C on CP.IdCodigoPostal = C.IdCodigoPostal
-where CP.CodigoPostal = 38800;
+where CP.CodigoPostal = 36433;
+
+EXEC SP_Columnas 'Productos'
