@@ -825,23 +825,6 @@ GO
 
 --Ventas
 
-CREATE OR ALTER PROCEDURE SP_Ventas(
-	@IdProducto int,
-	@Cantidad smallint
-)
-AS
-BEGIN
-	
-	declare @Monto money, @NumTicket int, @Precio money;
-	set @Precio = (select PrecioVenta from Productos where IdProducto = @IdProducto)
-	select @Monto = @Cantidad*@Precio;
-	set @NumTicket = (SELECT IDENT_CURRENT('Tickets')+1);
-
-	insert into Ventas values (@IdProducto,@Cantidad,@Precio,@NumTicket,@Monto);
-
-END
-go
-
 CREATE OR ALTER function ObtenerTicket()
  returns int
  as
@@ -852,6 +835,32 @@ CREATE OR ALTER function ObtenerTicket()
 end
 go
 
+CREATE OR ALTER PROCEDURE SP_Ventas(
+	@IdProducto int,
+	@Cantidad smallint
+)
+AS
+BEGIN
+	declare @Monto money, @Precio money;
+
+	IF (select SUM(Cantidad) from Ventas where Ticket = 2) IS NULL AND (select dbo.ObtenerTicket()) < 3
+	BEGIN 
+		
+		set @Precio = (select PrecioVenta from Productos where IdProducto = @IdProducto)
+		select @Monto = @Cantidad*@Precio;
+		insert into Ventas values (@IdProducto,@Cantidad,@Precio,1,@Monto);
+	END
+	ELSE
+	BEGIN 
+		declare @NumTicket int
+		set @Precio = (select PrecioVenta from Productos where IdProducto = @IdProducto)
+		select @Monto = @Cantidad*@Precio;
+		set @NumTicket = (SELECT IDENT_CURRENT('Tickets')+1);
+		insert into Ventas values (@IdProducto,@Cantidad,@Precio,@NumTicket,@Monto);
+	END
+
+END
+go
 
 CREATE OR ALTER PROCEDURE SP_Tickets (@IdCliente int, @IdEmpleado int)
 as
@@ -878,22 +887,6 @@ begin
 end;
 go
 
-CREATE OR ALTER PROCEDURE SP_VentasPrimerVenta(
-	@IdProducto int,
-	@Cantidad smallint
-)
-AS
-BEGIN
-	
-	declare @Monto money, @Precio money;
-	set @Precio = (select PrecioVenta from Productos where IdProducto = @IdProducto)
-	select @Monto = @Cantidad*@Precio;
-
-	insert into Ventas values (@IdProducto,@Cantidad,@Precio,1,@Monto);
-
-END
-go
-
 
 CREATE OR ALTER PROCEDURE SP_TicketActualVista
 AS
@@ -916,7 +909,23 @@ BEGIN
  END
 GO
 
-SP_Ventas 1, 1
+CREATE OR ALTER PROCEDURE SP_ObtenerTotal
+AS
+BEGIN
+	IF (select SUM(Cantidad) from Ventas where Ticket = 2) IS NULL AND (select dbo.ObtenerTicket()) < 3
+	BEGIN 
+		SELECT SUM(Monto) as Total FROM Ventas WHERE Ticket = 1;
+	END
+	ELSE
+	BEGIN 
+		SELECT SUM(Monto) as Total FROM Ventas WHERE Ticket = dbo.ObtenerTicket();
+	END
+END
+GO
+
+SELECT * FROM Ventas
+go
+SP_Ventas 2, 2
 
 EXEC SP_Tickets 1,1
 

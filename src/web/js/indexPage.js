@@ -30,7 +30,7 @@ async function ingresar() {
         }
         
     } else if(res.status == 400) {
-        crearAlerta("danger","Cuenta Inactiva. Póngase en contacto con su gerente.")
+        crearAlerta("danger","Cuenta Suspendida. Póngase en contacto con su gerente para más información.")
     }
     else
     {
