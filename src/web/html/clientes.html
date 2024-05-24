@@ -29,25 +29,23 @@
           <table class="table table-striped" id="tablaPrincipal">
             <thead>
               <tr>
-                <th scope="col">ID Producto</th>
+                <th scope="col">ID Cliente</th>
                 <th scope="col">Nombre</th>
-                <th scope="col">Categoría</th>
-                <th scope="col">Proveedor</th>
-                <th scope="col">Precio de Compra</th>
-                <th scope="col">Precio de Venta</th>
-                <th scope="col">Stock</th>
+                <th scope="col">Correo</th>
+                <th scope="col">Teléfono</th>
+                <th scope="col">Dirección</th>
               </tr>
             </thead>
             <tbody id="tabla">
               {{#each elementos}}
                 <tr>
-                  <div><th><button type="button" class="btn btn-light" onclick="botonesID(this)" id="{{IdProducto}}" >{{IdProducto}}</button></th></div>
+                  <div><th><button type="button" class="btn btn-light" onclick="botonesID(this)" id="{{IdCliente}}" >{{IdCliente}}</button></th></div>
                   <td>{{Nombre}}</td>
-                  <td>{{Categoria}}</td>
-                  <td>{{Proveedor}}</td>
-                  <td>${{PrecioCompra}}</td>
-                  <td>${{PrecioVenta}}</td>
-                  <td>{{Stock}}</td>
+                  <td>{{Correo}}</td>
+                  <td>{{Telefono}}</td>
+                  <div><th><button type="button" class="btn btn-light" data-bs-target="#modalCrearProducto" onclick="botonesDirecciones(this)"
+                    data-bs-toggle="modal"
+                    data-bs-target="#staticBackdrop" id="{{Direccion}}" >{{Direccion}}</button></th></div>
                 </tr>
               {{/each}}
             </tbody>
@@ -99,7 +97,7 @@
          type="button"
          class="btn-close"
          data-bs-dismiss="modal"
-         aria-label="Close"
+         aria-label="Close" id="closeButton"
        ></button>
      </div>
      <div class="modal-body" id="divModal"></div>
@@ -107,7 +105,7 @@
        <button
          type="button"
          class="btn btn-secondary"
-         data-bs-dismiss="modal"
+         data-bs-dismiss="modal" id="okButton"
        >
          Cancelar
        </button>
@@ -137,8 +135,6 @@
             <option value="seleccion" selected>Seleccione una opción</option>
             <option value="Nombre">Nombre</option>
             <option value="ID">ID</option>
-            <option value="Categoria">Categoría</option>
-            <option value="Proveedor">Proveedor</option>
           </select>
         </div>
         <div class="col-md-auto">
@@ -149,10 +145,6 @@
             id="inputBuscar"
           />
         </div>
-        <div class="col-md-auto">
-            <select class="form-select" id="selectFiltro" style="display: none;">
-            </select>
-          </div>
         <div class="col-md-auto">
           <button type="button" class="btn btn-info" onclick="seleccion()">
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -203,6 +195,6 @@
 
     <script src="./../js/navbar.js"></script>
     <!-- Cambiar este -->
-    <script src="./../js/productos.js"></script>
+    <script src="./../js/clientes.js"></script>
   </body>
 </html>

@@ -182,10 +182,13 @@ Total money not null check(Total>=0),
 Fecha date not null,
 IdCliente int foreign key references Clientes(IdCliente) on delete cascade,
 Sucursal int,
+Empleado int,
 CONSTRAINT PK_Tickets PRIMARY KEY(Ticket),
 CONSTRAINT FK_TicketsToClientes FOREIGN KEY(IdCliente) REFERENCES Clientes(IdCliente) on DELETE NO ACTION,
-CONSTRAINT FK_TicketsToSucursales FOREIGN KEY(Sucursal) REFERENCES Sucursales(IdSucursal) ON DELETE NO ACTION
+CONSTRAINT FK_TicketsToSucursales FOREIGN KEY(Sucursal) REFERENCES Sucursales(IdSucursal) ON DELETE NO ACTION,
+CONSTRAINT FK_TicketsToEmpleados FOREIGN KEY(Empleado) REFERENCES Empleados(IdEmpleado) ON DELETE NO ACTION
 );
+
 ---------------------------------------CCODIGOS POSTALES-----------------------
 insert into Paises values('Mexico');
 insert into Estados select distinct d_estado, 1 from Guanajuato$ where d_estado is not null;
@@ -234,7 +237,27 @@ AS
 SELECT P.IdProducto, P.Nombre, C.Categoria, P.PrecioCompra, P.PrecioVenta, P.Stock, Pr.Proveedor FROM Productos AS P LEFT JOIN Categorias AS C ON P.IdCategoria = C.IdCategoria INNER JOIN Proveedores as Pr ON P.IdProveedor = Pr.IdProveedor
 GO
 
-select * from Categorias
+CREATE OR ALTER VIEW VistaClientes
+AS
+SELECT C.IdCliente, P.Nombre, P.CorreoElectronico as Correo, P.Telefono, P.IdDireccion as Direccion  FROM Clientes as C INNER JOIN Personas as P ON C.IdPersona = P.IdPersona
+GO
+
+CREATE OR ALTER VIEW VistaPersonasParaClientes
+AS
+SELECT C.IdCliente, P.Nombre, P.CorreoElectronico as Correo, P.Telefono, P.IdDireccion as Direccion  FROM Personas as P INNER JOIN Clientes as C ON P.IdPersona = C.IdPersona
+GO
+
+CREATE OR ALTER VIEW VistaClientesCompras
+AS
+SELECT T.IdCliente, COUNT(T.IdCliente) as Compras, SUM(T.Total) as Total FROM Ventas as V INNER JOIN Tickets as T ON V.Ticket = T.Ticket INNER JOIN Clientes as C ON T.IdCliente = C.IdCliente GROUP BY T.IdCliente
+GO
+
+select * from Ventas
+select * from Tickets
+select * from Personas
+
+
+
 ---------------------------------------FUNCIONES-----------------------
 GO
 
@@ -727,6 +750,152 @@ BEGIN
 END
 GO
 
+-- Clientes
+CREATE OR ALTER PROCEDURE SP_InsertClientes(@idPersona INT)
+AS
+BEGIN
+    INSERT into Clientes VALUES(@idPersona)
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ClientesVista
+AS
+BEGIN
+ SELECT * FROM VistaClientes;
+ END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ClientesVistaPorID(@Id int)
+AS
+BEGIN
+	SELECT * FROM VistaClientes WHERE IdCliente = @Id
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ClientesVistaPorNombre(@Nombre varchar(50))
+AS
+BEGIN
+	SELECT * FROM VistaClientes WHERE Nombre Like '%'+@Nombre+'%'
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_AgregarClientesPag(@Nombre varchar(50), @correo varchar(50), @Telefono varchar(15), @Direccion int)
+AS
+BEGIN
+	INSERT INTO Personas VALUES(@Nombre,@Correo,@Telefono,@Direccion);
+	INSERT INTO Clientes VALUES(IDENT_CURRENT('Personas'));
+	SELECT IDENT_CURRENT('Clientes') as Id;
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_AlterCliente(@Id int, @Nombre varchar(30),@Correo varchar(50),@Telefono varchar(20), @Direccion int)
+AS
+BEGIN
+BEGIN TRY
+	BEGIN TRANSACTION
+	UPDATE  P SET P.Nombre=@Nombre, P.CorreoElectronico = @Correo, P.Telefono = @Telefono, P.IdDireccion = @Direccion from Personas as P INNER JOIN Clientes as C ON C.IdPersona=P.IdPersona WHERE C.IdCliente = @Id;
+	SELECT IDENT_CURRENT('Clientes') as Id;
+	COMMIT
+END TRY
+BEGIN CATCH
+	ROLLBACK TRANSACTION
+END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_DeleteCliente (@Id int)
+AS
+BEGIN
+ DELETE Clientes Where IdCliente = @Id
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ObtenerPersonas
+AS
+BEGIN
+SELECT IdPersona AS Id, CONCAT('ID: ',IdPersona, ' Nombre: ',Nombre) AS Elemento FROM Personas
+END
+GO
+
+--Ventas
+
+CREATE OR ALTER PROCEDURE SP_Ventas(
+	@IdProducto int,
+	@Cantidad smallint
+)
+AS
+BEGIN
+	
+	declare @Monto money, @NumTicket int, @Precio money;
+	set @Precio = (select PrecioVenta from Productos where IdProducto = @IdProducto)
+	select @Monto = @Cantidad*@Precio;
+	set @NumTicket = (SELECT IDENT_CURRENT('Tickets')+1);
+
+	insert into Ventas values (@IdProducto,@Cantidad,@Precio,@NumTicket,@Monto);
+
+END
+go
+
+CREATE OR ALTER function ObtenerTicket()
+ returns int
+ as
+ begin
+	declare @ID int;
+	set @ID = (SELECT IDENT_CURRENT('Tickets')+1);
+	return @ID;
+end
+go
+
+
+CREATE OR ALTER PROCEDURE SP_Tickets (@IdCliente int, @IdEmpleado int)
+as
+begin
+	
+	declare @CantidadTotal int, @Total money, @Id int, @Sucursal int;
+
+	SET @Sucursal = (SELECT Sucursal FROM Empleados WHERE IdEmpleado = @IdEmpleado);
+
+	IF (select SUM(Cantidad) from Ventas where Ticket = 2) IS NULL AND (select dbo.ObtenerTicket()) < 3
+	BEGIN 
+		set @Id = 1;
+		set @CantidadTotal = (select SUM(Cantidad) from Ventas where Ticket = @Id);
+		set @Total = (select SUM(Monto) from Ventas where Ticket = @Id)
+		insert into Tickets values (@CantidadTotal,@Total,GETDATE(),@IdCliente,@Sucursal,@IdEmpleado);
+	END
+	ELSE
+	BEGIN 
+		set @Id = (SELECT IDENT_CURRENT('Tickets')+1);
+		set @CantidadTotal = (select SUM(Cantidad) from Ventas where Ticket = @Id);
+		set @Total = (select SUM(Monto) from Ventas where Ticket = @Id)
+		insert into Tickets values (@CantidadTotal,@Total,GETDATE(),@IdCliente,@Sucursal,@IdEmpleado)
+	END
+end;
+go
+
+CREATE OR ALTER PROCEDURE SP_VentasPrimerVenta(
+	@IdProducto int,
+	@Cantidad smallint
+)
+AS
+BEGIN
+	
+	declare @Monto money, @Precio money;
+	set @Precio = (select PrecioVenta from Productos where IdProducto = @IdProducto)
+	select @Monto = @Cantidad*@Precio;
+
+	insert into Ventas values (@IdProducto,@Cantidad,@Precio,1,@Monto);
+
+END
+go
+
+SP_VentasPrimerVenta 1, 1
+
+EXEC SP_Tickets 1,1
+
+SELECT * from VEntas
+Select * from Tickets
+---
+
 EXEC SP_InsertDireccion 1, 1, 20, 6487, 1276, 'Vallarta 78'
 EXEC SP_InsertDireccion 1, 1, 15, 586, 350, 'Puebla 45'
 EXEC SP_InsertDireccion 1, 1, 2, 8638, 1262, 'Satelite 25'
@@ -748,6 +917,12 @@ EXEC SP_InsertSucursal 'Sucursal Guerrero',6
 EXEC SP_InsertPersonas 'Juan Pérez','juan@gmail.com','4454554575',1
 EXEC SP_InsertPersonas 'Pedro Villa','pedro@gmail.com','45557454',2
 EXEC SP_InsertPersonas 'Joaquin Piedra','joaquin@gmail.com','454545454',3
+EXEC SP_InsertPersonas 'Sandra Mora','sandra@gmail.com','4268421873',1
+EXEC SP_InsertPersonas 'Carlos Estrada','carlos@gmail.com','48675139746',3
+
+EXEC SP_InsertClientes 4
+EXEC SP_InsertClientes 5
+
 
 EXEC SP_InsertRoles 'Gerente'
 EXEC SP_InsertRoles 'Operador'
@@ -791,7 +966,7 @@ EXEC SP_InsertProductos 'Razer DeathAdder V2 Mouse', 6, 1500,1800, 60,5
 
 select * From Categorias
 select * From Proveedores
-select * From Productos
+select * From Tickets
 
 select * From Guanajuato$ where d_asenta = 'San Javier'
 

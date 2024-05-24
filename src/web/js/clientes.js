@@ -1,87 +1,64 @@
 const valorInputBarra = document.getElementById("inputBuscar");
 
 //Titulos
-const tituloPestañaSup = document.getElementById("TituloPestaña").textContent = "Empleados";
-const tituloBodySup = document.getElementById("TituloBody").textContent = "Empleados";
+const tituloPestañaSup = document.getElementById("TituloPestaña").textContent = "Clientes";
+const tituloBodySup = document.getElementById("TituloBody").textContent = "Clientes";
 
 //Funciones
-const stockGetAllData = "SP_EmpleadosVista"
-const stockGetByID = "SP_EmpleadosVistaPorID"
-const stockGetByName = "SP_EmpleadosVistaPorNombre"
-const tablaColumnasEditar = "Perfil";
-const rutaEditar = "editarEmpleados"
-const tablaColumnasCrear = "EmpleadoCrear";
-const rutaCrear = "agregarEmplado";
+const stockGetAllData = "SP_ClientesVista"
+let stockGetByID = "SP_ClientesVistaPorID"
+const stockGetByName = "SP_ClientesVistaPorNombre"
+const stockDeleteElement = "SP_DeleteCliente"
+const tablaColumnasEditar = "VistaClientes";
+const rutaEditar = "editarCliente"
+const tablaColumnasCrear = "VistaClientes";
+const rutaCrear = "agregarCliente";
 
 API = "http://localhost:3000/";
 
 //Funcion para crear el formulario para editar
 async function crearFormularioEditar() {
-  const Titulo = "Editar Empleado"
+  const Titulo = "Editar Cliente"
+  const nombreDelId = "IdCliente"
+  const etiquetaDelID = "Cliente"
   const opcionesSelect2 = ["Activo","Despedido","Ausente"];
   let IdElemento = 0;
 
   document.querySelector(".tituloModal").textContent = Titulo;
   const resJson = await obtenerColumnas(tablaColumnasEditar) 
     const valores = await obtenerDatosTablaPorId(valorInputBarra.value); 
-    IdElemento = valores[0].Empleado;
+    IdElemento = valores[0][`${nombreDelId}`];
     columnas = resJson.map(objeto => objeto.Columnas);
     console.log(columnas);
     columnas.forEach(elemento => {
       console.log(elemento);
-      if(elemento == "Empleado") {
-        const etiquetaBase = document.getElementById("EmpleadoLabel");
-        etiquetaBase.textContent = `Empleado: ${IdElemento}`;
+      if(elemento == nombreDelId) {
+        const etiquetaBase = document.getElementById(`${nombreDelId}`);
+        etiquetaBase.textContent = `${etiquetaDelID}: ${IdElemento}`;
         etiquetaBase.classList.add("text-center");
-      } else if(elemento == "Rol")
+      } else if(elemento == "Direccion")
         {
-          const selectRol = crearElementoHTML("select");
-          selectRol.classList.add("form-select","form-control-sm");
-          selectRol.setAttribute("aria-label","Default select example");
-          selectRol.id = `in${elemento}`;
+          const selectDireccion = crearElementoHTML("select");
+          selectDireccion.classList.add("form-select","form-control-sm");
+          selectDireccion.setAttribute("aria-label","Default select example");
+          selectDireccion.id = `in${elemento}`;
           console.log("El id es: "+ `in${elemento}`);
-          document.getElementById(elemento).appendChild(selectRol);
-          obtenerOpciones("SP_ObtenerRoles",selectRol,valores[0].Rol);
-        } else if(elemento == "Estatus") {
-          const selectEstatus = crearElementoHTML("select");
-          selectEstatus.classList.add("form-select","form-control-sm");
-          selectEstatus.setAttribute("aria-label","Default select example");
-          selectEstatus.id = `in${elemento}`;
-          console.log("El id es: "+ `in${elemento}`);
-          document.getElementById(elemento).appendChild(selectEstatus);
-          opcionesSelect2.forEach(valor => {
-            const opcion = document.createElement("option");
-            if(valor == valores[0].Estatus) {
-                opcion.setAttribute("selected","");
-            }
-            opcion.value = valor;
-            opcion.textContent = valor;
-            selectEstatus.appendChild(opcion);
-          });
-        } else if (elemento == "Sucursal") {
-          const selectSucursal = crearElementoHTML("select");
-          selectSucursal.classList.add("form-select","form-control-sm");
-          selectSucursal.setAttribute("aria-label","Default select example");
-          selectSucursal.id = `in${elemento}`;
-          console.log("El id es: "+ `in${elemento}`);
-          document.getElementById(elemento).appendChild(selectSucursal);
-          obtenerOpciones("SP_ObtenerSucursales",selectSucursal,valores[0].Sucursal);
-        } 
-        
-        else{
+          document.getElementById(elemento).appendChild(selectDireccion);
+          console.log("La direccion es"+valores[0].Direccion);
+          obtenerOpciones("SP_ObtenerDirecciones",selectDireccion,valores[0].Direccion);
+        } else {
           crearInput(elemento,valores[0][`${elemento}`]);
         }
   });
-
-  document.getElementById("enviarForm").onclick = () => enviarFormulario(IdElemento,"Editar","Empleado",`${rutaEditar}/`,columnas);
+  document.getElementById("enviarForm").onclick = () => enviarFormulario(IdElemento,"Editar",nombreDelId,`${rutaEditar}/`,columnas);
 
 }
 
 //Funcion para crear el formulario para crear
 async function crearFormularioCrear() {
-  const Titulo = "Agregar Empleado"
+ const Titulo = "Agregar Cliente"
+  const nombreDelId = "IdCliente"
   const opcionesSelect2 = ["Activo","Despedido","Ausente"];
-  let IdElemento = 0;
 
   document.querySelector(".tituloModal").textContent = Titulo;
   const resJson = await obtenerColumnas(tablaColumnasCrear) 
@@ -89,57 +66,23 @@ async function crearFormularioCrear() {
     console.log(columnas);
     columnas.forEach(elemento => {
       console.log(elemento);
-      if(elemento == "Empleado") {
-        const etiquetaBase = document.getElementById("EmpleadoLabel");
-        etiquetaBase.textContent = `Empleado: ${IdElemento}`;
-        etiquetaBase.classList.add("text-center");
-      } else if(elemento == "Rol")
+      if(elemento == nombreDelId) {
+        const etiquetaBase = document.getElementById(`${nombreDelId}`);
+        etiquetaBase.remove();
+      } else if(elemento == "Direccion")
         {
-          const selectRol = crearElementoHTML("select");
-          selectRol.classList.add("form-select","form-control-sm");
-          selectRol.setAttribute("aria-label","Default select example");
-          selectRol.id = `in${elemento}`;
+          const selectDireccion = crearElementoHTML("select");
+          selectDireccion.classList.add("form-select","form-control-sm");
+          selectDireccion.setAttribute("aria-label","Default select example");
+          selectDireccion.id = `in${elemento}`;
           console.log("El id es: "+ `in${elemento}`);
-          document.getElementById(elemento).appendChild(selectRol);
-          obtenerOpciones("SP_ObtenerRoles",selectRol,"Operador");
-        } else if(elemento == "IdPersona")
-          {
-            const selectPersona = crearElementoHTML("select");
-            selectPersona.classList.add("form-select","form-control-sm");
-            selectPersona.setAttribute("aria-label","Default select example");
-            selectPersona.id = `in${elemento}`;
-            console.log("El id es: "+ `in${elemento}`);
-            document.getElementById(elemento).appendChild(selectPersona);
-            obtenerOpciones("SP_ObtenerPersonas",selectPersona,"");
-          } else if(elemento == "Estatus") {
-          const selectEstatus = crearElementoHTML("select");
-          selectEstatus.classList.add("form-select","form-control-sm");
-          selectEstatus.setAttribute("aria-label","Default select example");
-          selectEstatus.id = `in${elemento}`;
-          console.log("El id es: "+ `in${elemento}`);
-          document.getElementById(elemento).appendChild(selectEstatus);
-          opcionesSelect2.forEach(valor => {
-            const opcion = document.createElement("option");
-            if(valor == "Activo") {
-                opcion.setAttribute("selected","");
-            }
-            opcion.value = valor;
-            opcion.textContent = valor;
-            selectEstatus.appendChild(opcion);
-          });
-        } else if (elemento == "Sucursal") {
-          const selectSucursal = crearElementoHTML("select");
-          selectSucursal.classList.add("form-select","form-control-sm");
-          selectSucursal.setAttribute("aria-label","Default select example");
-          selectSucursal.id = `in${elemento}`;
-          console.log("El id es: "+ `in${elemento}`);
-          document.getElementById(elemento).appendChild(selectSucursal);
-          obtenerOpciones("SP_ObtenerSucursales",selectSucursal,"");
-        }  else {
+          document.getElementById(elemento).appendChild(selectDireccion);
+          obtenerOpciones("SP_ObtenerDirecciones",selectDireccion,"");
+        } else {
           crearInput(elemento,"");
         }
   });
-  document.getElementById("enviarForm").onclick = () => enviarFormulario("","Crear","",`${rutaCrear}/`,columnas);
+  document.getElementById("enviarForm").onclick = () => enviarFormulario("","Crear",nombreDelId,`${rutaCrear}/`,columnas);
 }
 
 //Funcion para obtener los datos de la tabla
@@ -161,7 +104,7 @@ async function obtenerDatosTabla() {
 
 //Funcion para borrar los elementos de la tabla
 async function eliminarElementos() {
-  const res = await fetch(`${API}deleteEmpleado/${valorInputBarra.value}`, {
+  const res = await fetch(`${API}deleteTablas/${stockDeleteElement}/${valorInputBarra.value}`, {
     method : "DELETE",
     headers: {
       "Content-Type": "application/json"
@@ -172,10 +115,7 @@ async function eliminarElementos() {
     crearAlerta("success","Elemento Eliminado");
     obtenerDatosTabla();
     valorInputBarra.value = "";
-  } else if (res.status == 400){
-    crearAlerta("warning","No se puede eliminar a si mismo");
-  }
-    else{
+  } else {
     crearAlerta("danger","No se ha podido eliminar el elemento");
   }
 }
@@ -358,7 +298,7 @@ async function obtenerOpciones(stock,select,actual) {
       const resJson = await res.json();
       resJson.forEach(valor => {
           const opcion = document.createElement("option");
-          if(valor.Elemento == actual) {
+          if(valor.Id == actual) {
               opcion.setAttribute("selected","");
           }
           opcion.value = valor.Id;
@@ -407,6 +347,53 @@ $("#selectBuscar").on("change keyup paste", function(){
 })
 
 function botonesID(boton) {
-  valorInputBarra.value = boton.id;
-  document.getElementById("selectBuscar").value = "ID";
+    valorInputBarra.value = boton.id;
+    document.getElementById("selectBuscar").value = "ID";
 }
+
+async function botonesDirecciones(boton) {
+
+    const Titulo = "Información Direcciones"
+    const nombreDelId = "IdDireccion"
+    const etiquetaDelID = "Dirección"
+    let IdElemento = 0;
+    
+    document.querySelector(".tituloModal").textContent = Titulo;
+    const resJson = await obtenerColumnas("VistaDirecciones") 
+    let variable = stockGetByID;
+    stockGetByID = "SP_MostrarDireccion"
+      const valores = await obtenerDatosTablaPorId(boton.id); 
+      deshabilitarElementos();
+      stockGetByID = variable;
+      IdElemento = valores[0][`${nombreDelId}`];
+      columnas = resJson.map(objeto => objeto.Columnas);
+      columnas.forEach(elemento => {
+        console.log(elemento);
+        if(elemento == nombreDelId) {
+          const etiquetaBase = document.getElementById(`${nombreDelId}`);
+          etiquetaBase.textContent = `${etiquetaDelID}: ${IdElemento}`;
+          etiquetaBase.classList.add("text-center");
+        } else {
+          // crearInput(elemento,valores[0][`${elemento}`]);
+          const etiqueta = document.getElementById(elemento);
+          const input = crearElementoHTML("input");
+          input.classList.add("form-control");
+          input.value = valores[0][`${elemento}`];
+          input.setAttribute("Disabled","");
+          etiqueta.appendChild(input);
+        }
+    });
+  
+    document.getElementById("okButton").textContent = "OK";
+    document.getElementById("enviarForm").style.display = "none";
+    document.getElementById("closeButton").style.display = "none";
+    document.getElementById("okButton").onclick = () => {
+      document.getElementById("closeButton").setAttribute.display = "";
+      document.getElementById("enviarForm").style.display = "";
+      document.getElementById("okButton").textContent = "Cancelar";
+      document.getElementById("closeButton").style.display = "";
+      document.getElementById("divModal").innerHTML = "";
+    };
+  
+  }
+  
