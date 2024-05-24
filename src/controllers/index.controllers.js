@@ -15,7 +15,13 @@ export const login = async (req,res) => {
             console.log("Este es el empleado"+ result.recordset[0].Empleado);
             req.session.user = result.recordset[0].Empleado;
             req.session.rol = result.recordset[0].Rol
+            req.session.rol = result.recordset[0].Rol
+            req.session.estatus = result.recordset[0].Estatus
             req.session.visited = true;
+            if(req.session.estatus == "Despedido") {
+                console.error("Cuenta Inactiva");
+                return res.status(400).json({message : "Cuenta Inactiva"})
+            }
         }
 
         req.sessionStore.get(req.session.id, (err,sessioData) => {

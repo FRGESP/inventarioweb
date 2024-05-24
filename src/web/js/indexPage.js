@@ -29,6 +29,8 @@ async function ingresar() {
             crearAlerta("danger","Empleado no encontrado")
         }
         
+    } else if(res.status == 400) {
+        crearAlerta("danger","Cuenta Inactiva. Póngase en contacto con su gerente.")
     }
     else
     {

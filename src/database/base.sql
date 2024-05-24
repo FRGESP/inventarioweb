@@ -252,6 +252,11 @@ AS
 SELECT T.IdCliente, COUNT(T.IdCliente) as Compras, SUM(T.Total) as Total FROM Ventas as V INNER JOIN Tickets as T ON V.Ticket = T.Ticket INNER JOIN Clientes as C ON T.IdCliente = C.IdCliente GROUP BY T.IdCliente
 GO
 
+CREATE VIEW vistaTicket
+as
+	select v.IdVenta ,p.Nombre as Producto, v.Cantidad, v.Precio,v.Monto  from Ventas as v INNER JOIN Productos as p ON v.IdProducto = p.IdProducto where v.Ticket = dbo.obtenerTicket();
+go
+
 select * from Ventas
 select * from Tickets
 select * from Personas
@@ -361,10 +366,11 @@ GO
 CREATE OR ALTER PROCEDURE SP_ValidarEmpleado(@Id int, @Clave varchar(15))
 AS
 BEGIN
-	DECLARE @IdEmpleado int,@Rol int;
+	DECLARE @IdEmpleado int,@Rol int, @Estatus varchar(20);
 	SET @IdEmpleado = (select IdEmpleado from Empleados where IdEmpleado = @Id)
 	SET @Rol = (SELECT IdRol from Empleados where IdEmpleado = @ID)
-	select dbo.validarEmpleado(@Id,@Clave) as 'Respuesta', @IdEmpleado as Empleado,@Rol as Rol
+	SET @Estatus = (SELECT Estatus FROM Empleados WHERE IdEmpleado = @Id)
+	select dbo.validarEmpleado(@Id,@Clave) as 'Respuesta', @IdEmpleado as Empleado,@Rol as Rol, @Estatus as Estatus
 END
 GO
 
@@ -888,7 +894,29 @@ BEGIN
 END
 go
 
-SP_VentasPrimerVenta 1, 1
+
+CREATE OR ALTER PROCEDURE SP_TicketActualVista
+AS
+BEGIN
+ SELECT * FROM vistaTicket;
+ END
+GO
+
+CREATE OR ALTER PROCEDURE SP_DeleteVenta(@Id int)
+AS
+BEGIN
+ DELETE Ventas Where IdVenta = @Id
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ObtenerCliente(@Id int)
+AS
+BEGIN
+ SELECT C.IdCliente ,P.Nombre FROM Clientes as C INNER JOIN Personas as P ON P.IdPersona = C.IdPersona WHERE C.IdCliente = @Id
+ END
+GO
+
+SP_Ventas 1, 1
 
 EXEC SP_Tickets 1,1
 
