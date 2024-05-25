@@ -1,19 +1,11 @@
 let Idclientevar;
 //Titulos
-const tituloPestañaSup = (document.getElementById("TituloPestaña").textContent =
-  "Personas");
-const tituloBodySup = (document.getElementById("TituloBody").textContent =
-  "Personas");
+const tituloPestañaSup = document.getElementById("TituloPestaña").textContent ="Ventas";
+const tituloBodySup = document.getElementById("TituloBody").textContent ="Ventas";
 
 //Funciones
 const stockGetAllData = "SP_TicketActualVista";
-const stockGetByID = "SP_PersonasVistaPorID";
-const stockGetByName = "SP_PersonasVistaPorNombre";
 const stockDeleteElement = "SP_DeleteVenta";
-const tablaColumnasEditar = "PersonasVista";
-const rutaEditar = "editarPersonas";
-const tablaColumnasCrear = "PersonasVista";
-const rutaCrear = "agregarPersona";
 
 API = "http://localhost:3000/";
 
@@ -86,12 +78,33 @@ async function subirTicket() {
     IdCliente.removeAttribute("disabled");
     botonBuscar.style.display = "";
     deshabilitarElementos();
+    SacarPDF()
     crearAlerta("success","Venta realizada")
   } else {
     crearAlerta("danger","No se pudo realizar la venta. verifique los datos");
   }
 }
 
+// Funcion para imprimir Ticket
+
+async function SacarPDF() {
+  const res = await fetch(API + "imprimirTicket");
+  if (res.ok) {
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'Ticket.pdf';
+      document.body.appendChild(a);
+      a.click();
+
+      // window.open(url, '_blank');
+
+      window.URL.revokeObjectURL(url);
+  } else {
+      console.log("Hubo un error al obtener el PDF");
+  }
+};
 //Fucion para obtener total de la venta
 
 async function obtenerTotal() {
@@ -171,79 +184,6 @@ async function obtenerDatosTablaPorId(IdElemento) {
   }
 }
 
-//Funcion para obtener datos por Nombre
-async function obtenerDatosTablaPorNombre() {
-  const res = await fetch(
-    `${API}vistaTablas/${stockGetByName}/${valorInputBarra.value}`
-  );
-  if (res.ok) {
-    console.log("SIUUU");
-    const resJson = await res.json();
-    console.log(resJson);
-    llenarTabla(resJson);
-  } else {
-    crearAlerta("danger", "No se ha encontrado nada con ese nombre");
-  }
-}
-
-//Funcion para obtener datos por Nombre
-async function obtenerColumnas(tabla) {
-  const ruta = `${API}vistaTablas/SP_Columnas/${tabla}`;
-  console.log(ruta);
-  const res = await fetch(ruta);
-  if (res.ok) {
-    const resJson = await res.json();
-    llenarFormulario(resJson);
-    return resJson;
-  } else {
-    crearAlerta("danger", "No se ha podido obtener las columnas");
-  }
-}
-
-async function enviarFormulario(id, accion, nombreId, ruta, columnas) {
-  let bodyData = {};
-  columnas.forEach((columna) => {
-    if (columna != nombreId) {
-      console.log(`in${columna}`);
-      let columnaActual = document.getElementById(`in${columna}`);
-      bodyData[columna] = columnaActual.value;
-      columnaActual.remove();
-    }
-  });
-  console.log(bodyData);
-  let res;
-  if (accion == "Editar") {
-    res = await fetch(API + ruta + id, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(bodyData),
-    });
-  } else if (accion == "Crear") {
-    res = await fetch(API + ruta, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(bodyData),
-    });
-  }
-
-  if (res.ok) {
-    const resJson = await res.json();
-    if (accion == "Editar") {
-      llenarTabla(await obtenerDatosTablaPorId(id));
-    } else {
-      llenarTabla(await obtenerDatosTablaPorId(resJson.Id));
-    }
-    console.log(resJson);
-    crearAlerta("success", "Operacion Completada");
-  } else {
-    crearAlerta("danger", "No se pudo hacer la operacion");
-  }
-  console.log(bodyData);
-}
 
 //Funcion para crear alertas
 function crearAlerta(tipo, texto) {
@@ -268,34 +208,6 @@ function crearAlerta(tipo, texto) {
   }, 4000);
 }
 
-async function seleccion() {
-  deshabilitarElementos();
-  const eleccion = document.getElementById("selectBuscar").value;
-  limpiarTabla();
-  if (eleccion == "Nombre") {
-    obtenerDatosTablaPorNombre();
-  } else if (eleccion == "ID") {
-    llenarTabla(await obtenerDatosTablaPorId(valorInputBarra.value));
-  } else {
-    crearAlerta("danger", "Seleccione una opción");
-  }
-}
-
-function limpiarTabla() {
-  const tabla = document.getElementById("tabla");
-  const filas = tabla.querySelectorAll("tr");
-  filas.forEach((fila) => {
-    fila.remove();
-  });
-}
-
-// Funcion para llenar la tabla con los datos obtenidos
-function llenarFormulario(data) {
-  var source = document.getElementById("form-template").innerHTML;
-  var template = Handlebars.compile(source);
-  var html = template({ elementos: data });
-  document.getElementById("divModal").innerHTML = html;
-}
 
 //Funcion para crear elementos
 function crearElementoHTML(elemento) {
@@ -303,35 +215,6 @@ function crearElementoHTML(elemento) {
   return nuevoElemento;
 }
 
-//Funcion para crear input
-function crearInput(nombre, valor) {
-  const etiqueta = document.getElementById(nombre);
-  const input = crearElementoHTML("input");
-  input.classList.add("form-control");
-  input.id = `in${nombre}`;
-  console.log("El id es: " + `in${nombre}`);
-  input.value = valor;
-  etiqueta.appendChild(input);
-}
-
-async function obtenerOpciones(stock, select, actual) {
-  const res = await fetch(API + "vistaTablas/" + stock);
-  if (res.ok) {
-    const resJson = await res.json();
-    resJson.forEach((valor) => {
-      const opcion = document.createElement("option");
-      if (valor.Elemento == actual) {
-        opcion.setAttribute("selected", "");
-      }
-      opcion.value = valor.Id;
-      opcion.textContent = valor.Elemento;
-      select.appendChild(opcion);
-    });
-    console.log(resJson);
-  } else {
-    console.log("No hay productos");
-  }
-}
 
 //Funcion para habilitar Elementos
 function habilitarElementos() {
@@ -347,23 +230,4 @@ function deshabilitarElementos() {
   elementos.forEach(function (elemento) {
     elemento.style.display = "none";
   });
-}
-
-$("#inputBuscar").on("change keyup paste", function () {
-  const input = document.getElementById("inputBuscar");
-  if (input.style.display != "none") {
-    deshabilitarElementos();
-  }
-});
-
-$("#selectBuscar").on("change keyup paste", function () {
-  const input = document.getElementById("inputBuscar");
-  if (input.style.display != "none") {
-    deshabilitarElementos();
-  }
-});
-
-function botonesID(boton) {
-  valorInputBarra.value = boton.id;
-  document.getElementById("selectBuscar").value = "ID";
 }

@@ -835,6 +835,21 @@ CREATE OR ALTER function ObtenerTicket()
 end
 go
 
+CREATE OR ALTER function ObtenerDireccion(@Id int)
+ returns varchar(100)
+ as
+ begin
+	DECLARE @CodigoPost int, @Direccion varchar(100)
+	SET @CodigoPost = (SELECT C.CodigoPostal FROM Direcciones AS D INNER JOIN CodigosPostales AS C ON D.IdCodigoPostal = C.IdCodigoPostal WHERE D.IdDireccion = @Id);
+	SET @Direccion =  (SELECT CONCAT(D.Calle,' COL: ',C.NombreColonia, ' C.P: ', CP.CodigoPostal, ' ', M.NombreMunicipio, ' ', E.nombreEstado) FROM DIrecciones AS D
+	INNER JOIN Colonias AS C ON D.IdColonia = C.IdColonia INNER JOIN CodigosPostales AS CP ON CP.IdCodigoPostal = D.IdCodigoPostal 
+	INNER JOIN Municipios AS M ON M.IdMunicipio = D.IdMunicipio INNER JOIN Estados AS E ON E.IdEstado = D.IdEstado WHERE CP.CodigoPostal = @CodigoPost AND D.IdDireccion = @Id);
+
+	Return @Direccion
+end
+go
+
+
 CREATE OR ALTER PROCEDURE SP_Ventas(
 	@IdProducto int,
 	@Cantidad smallint
@@ -923,8 +938,49 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE SP_ImprimirTicket
+AS
+BEGIN
+	DECLARE @Id int;
+	set @Id = (SELECT IDENT_CURRENT('Tickets'));
+	SELECT P.IdProducto, P.Nombre, V.Cantidad, V.Precio, V.Monto FROM VENTAS AS v INNER JOIN Productos as P ON P.IdProducto = V.IdProducto WHERE V.Ticket = @Id
+	SELECT C.IdCliente, P.Nombre, T.Total, T.Fecha, T.Ticket FROM Personas AS P INNER JOIN Clientes AS C ON C.IdPersona = P.IdPersona INNER JOIN Tickets AS T ON T.IdCliente = C.IdCliente WHERE T.Ticket = @Id
+	SELECT E.IdEmpleado, P.Nombre AS NombreEmpleado, S.Nombre as Sucursal, dbo.ObtenerDireccion(S.IdDireccion) AS Direccion FROM Empleados AS E INNER JOIN Personas AS  P ON E.IdPersona = P.IdPersona INNER JOIN Tickets AS T ON T.Empleado = E.IdEmpleado INNER JOIN Sucursales AS S ON S.IdSucursal = T.Sucursal WHERE T.Ticket = @Id
+END
+GO
+
+select * from Direcciones
+select * from Ventas
+select * from Sucursales
+GO
+---------------------------------------TRIGGERS-----------------------
+
+--Ventas
+
+CREATE TRIGGER TR_DeletedProductTicket
+ON Ventas
+FOR DELETE
+AS
+SET NOCOUNT ON;
+DECLARE @IdProducto INT, @Cantidad INT
+select @Cantidad = Cantidad from deleted;
+select @IdProducto = IdProducto from deleted;
+update Productos set Productos.Stock = Productos.Stock+@Cantidad where Productos.IdProducto = @IdProducto;
+go
+
+CREATE TRIGGER TR_UpdateInventarioProductos 
+ON Ventas
+FOR INSERT 
+AS
+SET NOCOUNT ON;
+UPDATE Productos SET Productos.Stock=Productos.Stock-inserted.Cantidad FROM inserted
+INNER JOIN Productos ON Productos.idProducto=inserted.idProducto
+GO
+
 SELECT * FROM Ventas
 go
+
+
 SP_Ventas 2, 2
 
 EXEC SP_Tickets 1,1
