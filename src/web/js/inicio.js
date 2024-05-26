@@ -15,6 +15,17 @@ async function nombre() {
     }
 }
 
+async function setEmpleadoID() {
+    const res = await fetch(API+"setEmpleadoID");
+
+    if(res.ok) {
+        const resJSON = await res.json();
+        console.log("El empleado con el ID: "+ resJSON.Empleado)
+    } else {
+        alert("No se ha podido establecer conexion");
+    }
+}
+
 // async function cargar() {
 //     const res = await fetch(API + "datos");
 //     if (res.ok) {

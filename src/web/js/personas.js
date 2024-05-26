@@ -136,6 +136,7 @@ async function obtenerDatosTabla() {
 
 //Funcion para borrar los elementos de la tabla
 async function eliminarElementos() {
+  const setID = await setEmpleadoID()
   const res = await fetch(`${API}deleteTablas/${stockDeleteElement}/${valorInputBarra.value}`, {
     method : "DELETE",
     headers: {
@@ -206,7 +207,7 @@ async function obtenerColumnas(tabla) {
 
 
 async function enviarFormulario(id,accion,nombreId,ruta,columnas) {
-
+  const setID = await setEmpleadoID()
   let bodyData = {};
   columnas.forEach(columna => {
     if(columna != nombreId) {
@@ -248,6 +249,7 @@ async function enviarFormulario(id,accion,nombreId,ruta,columnas) {
   } else {
       crearAlerta("danger", "No se pudo hacer la operacion");
   }
+  deshabilitarElementos()
   console.log(bodyData);
 }
 
@@ -428,4 +430,16 @@ async function botonesDirecciones(boton) {
     document.getElementById("divModal").innerHTML = "";
   };
 
+}
+
+async function setEmpleadoID() {
+  const res = await fetch(API+"setEmpleadoID/"+"Personas");
+
+  if(res.ok) {
+      const resJSON = await res.json();
+      console.log("El empleado con el ID: "+ resJSON.Empleado)
+  } else {
+      alert("No se ha podido establecer conexion");
+  }
+  return "ok"
 }

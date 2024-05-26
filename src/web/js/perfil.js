@@ -1,6 +1,7 @@
 API = "http://localhost:3000/";
 
 async function datosUsuario() {
+  const setID = await setEmpleadoID()
   const res = await fetch(API + "datos");
   if (res.ok) {
     const resJson = await res.json();
@@ -61,3 +62,15 @@ function crearAlerta(tipo,texto){
         divAlerta.remove();
     }, 4000);
 }
+
+async function setEmpleadoID() {
+    const res = await fetch(API+"setEmpleadoID/"+"Personas");
+  
+    if(res.ok) {
+        const resJSON = await res.json();
+        console.log("El empleado con el ID: "+ resJSON.Empleado)
+    } else {
+        alert("No se ha podido establecer conexion");
+    }
+    return "ok"
+  }

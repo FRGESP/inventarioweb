@@ -2,7 +2,6 @@ CREATE DATABASE Inventario;
 GO
 USE Inventario;
 GO
-
 ---------------------------------------TABLAS-----------------------
 CREATE TABLE Paises
 (
@@ -110,7 +109,7 @@ CREATE TABLE Clientes(
 IdCliente int not null IDENTITY,
 IdPersona int not null unique,
 CONSTRAINT PK_Clientes PRIMARY KEY(IdCliente),
-CONSTRAINT FK_ClientesToPersonas FOREIGN KEY(IdPersona) REFERENCES Personas(IdPersona)
+CONSTRAINT FK_ClientesToPersonas FOREIGN KEY(IdPersona) REFERENCES Personas(IdPersona) on delete cascade
 );
 
 CREATE TABLE Proveedores(
@@ -131,37 +130,109 @@ CONSTRAINT PK_Categorias PRIMARY KEY(IdCategoria)
 CREATE TABLE Productos (
 IdProducto int not null IDENTITY,
 Nombre varchar(75) not null,
-IdCategoria int not null,
+IdCategoria int,
 PrecioCompra money not null check(PrecioCompra>=0),
 PrecioVenta money not null check(PrecioVenta>=0),
 Stock int default 0 not null check(Stock>=0),
-IdProveedor int not null,
+IdProveedor int,
 CONSTRAINT PK_Productos PRIMARY KEY(IdProducto),
-CONSTRAINT FK_ProductosToProveedores FOREIGN KEY(IdProveedor) references Proveedores(IdProveedor) on delete cascade,
-CONSTRAINT FK_ProductosToCategorias FOREIGN KEY(IdCategoria) references Categorias(IdCategoria) on delete cascade
+CONSTRAINT FK_ProductosToProveedores FOREIGN KEY(IdProveedor) references Proveedores(IdProveedor) ON DELETE CASCADE,
+CONSTRAINT FK_ProductosToCategorias FOREIGN KEY(IdCategoria) references Categorias(IdCategoria) ON DELETE CASCADE
 );
 
+CREATE TABLE TempSessions(
+IdEmpleado int not null,
+Tabla varchar(50) not null
+);
 
 CREATE TABLE RegistroProductos(
 IdRegistro int not null IDENTITY,
 IdProducto int not null,
 Fecha date not null,
 Accion varchar(25) not null,
-Usuario int not null,
+Campo varchar(50) not null,
+ValorAnterior varchar(100) not null,
+ValorActual varchar(100) not null,
+Empleado int not null,
 CONSTRAINT PK_RegistroProductos PRIMARY KEY(IdRegistro),
-CONSTRAINT FK_RegistroProductosToProductos FOREIGN KEY(IdProducto) REFERENCES Productos(IdProducto) on delete cascade,
+CONSTRAINT FK_RegistroProductosToEmpleados FOREIGN KEY(Empleado) REFERENCES Empleados(IdEmpleado) on delete cascade
 );
 
-CREATE TABLE RegistroPrecios(
-IdRegistroPrecio int not null IDENTITY,
-IdProducto int not null,
+CREATE TABLE RegistroCategorias(
+IdRegistro int not null IDENTITY,
+IdCategoria int not null,
 Fecha date not null,
-Tipo varchar(50) not null,
-Usuario int not null,
-PrecioAnterior money not null,
-PrecioActual money not null,
-CONSTRAINT PK_RegistroPrecios PRIMARY KEY(IdRegistroPrecio),
-CONSTRAINT FK_RegistroPreciosToProductos FOREIGN KEY(IdProducto) REFERENCES Productos(IdProducto) on delete cascade 
+Accion varchar(25) not null,
+Campo varchar(50) not null,
+ValorAnterior varchar(100) not null,
+ValorActual varchar(100) not null,
+Empleado int not null,
+CONSTRAINT PK_RegistroCategorias PRIMARY KEY(IdRegistro),
+CONSTRAINT FK_RegistroCategoriasToEmpleados FOREIGN KEY(Empleado) REFERENCES Empleados(IdEmpleado) on delete cascade
+);
+
+CREATE TABLE RegistroProveedores(
+IdRegistro int not null IDENTITY,
+IdProveedor int not null,
+Fecha date not null,
+Accion varchar(25) not null,
+Campo varchar(50) not null,
+ValorAnterior varchar(100) not null,
+ValorActual varchar(100) not null,
+Empleado int not null,
+CONSTRAINT PK_RegistroProveedores PRIMARY KEY(IdRegistro),
+CONSTRAINT FK_RegistroProveedoresToEmpleados FOREIGN KEY(Empleado) REFERENCES Empleados(IdEmpleado) on delete cascade
+);
+
+CREATE TABLE RegistroSucursales(
+IdRegistro int not null IDENTITY,
+IdSucursal int not null,
+Fecha date not null,
+Accion varchar(25) not null,
+Campo varchar(50) not null,
+ValorAnterior varchar(100) not null,
+ValorActual varchar(100) not null,
+Empleado int not null,
+CONSTRAINT PK_RegistroSucursales PRIMARY KEY(IdRegistro),
+);
+
+CREATE TABLE RegistroClientes(
+IdRegistro int not null IDENTITY,
+IdCliente int not null,
+Fecha date not null,
+Accion varchar(25) not null,
+Campo varchar(50) not null,
+ValorAnterior varchar(100) not null,
+ValorActual varchar(100) not null,
+Empleado int not null,
+CONSTRAINT PK_RegistroClientes PRIMARY KEY(IdRegistro),
+CONSTRAINT FK_RegistroClientesToEmpleados FOREIGN KEY(Empleado) REFERENCES Empleados(IdEmpleado) on delete cascade
+);
+
+CREATE TABLE RegistroPersonas(
+IdRegistro int not null IDENTITY,
+IdPersona int not null,
+Fecha date not null,
+Accion varchar(25) not null,
+Campo varchar(50) not null,
+ValorAnterior varchar(100) not null,
+ValorActual varchar(100) not null,
+Empleado int not null,
+CONSTRAINT PK_RegistroPersonas PRIMARY KEY(IdRegistro),
+CONSTRAINT FK_RegistroPersonasToEmpleados FOREIGN KEY(Empleado) REFERENCES Empleados(IdEmpleado) on delete cascade
+);
+
+CREATE TABLE RegistroEmpleados(
+IdRegistro int not null IDENTITY,
+IdEmpleado int not null,
+Fecha date not null,
+Accion varchar(25) not null,
+Campo varchar(50) not null,
+ValorAnterior varchar(100) not null,
+ValorActual varchar(100) not null,
+Empleado int not null,
+CONSTRAINT PK_RegistroEmpleados PRIMARY KEY(IdRegistro),
+CONSTRAINT FK_RegistroEmpleadosToEmpleados FOREIGN KEY(Empleado) REFERENCES Empleados(IdEmpleado) on delete cascade
 );
 
 CREATE TABLE Ventas(
@@ -195,6 +266,59 @@ insert into Estados select distinct d_estado, 1 from Guanajuato$ where d_estado 
 insert into Municipios (nombreMunicipio,idEstado)  select DISTINCT G.D_mnpio, E.idEstado   from Guanajuato$ as G inner join Estados as E on G.d_estado = E.nombreEstado ;
 insert into CodigosPostales (codigoPostal,idMunicipio) select DISTINCT G.d_codigo, M.idMunicipio from Guanajuato$ as G inner join Municipios as M on G.D_mnpio = M.nombreMunicipio;
 insert into Colonias (nombreColonia, idCodigoPostal) select DISTINCT G.d_asenta, CP.idCodigoPostal from Guanajuato$ as G inner join CodigosPostales as CP on G.d_codigo = CP.CodigoPostal;
+---------------------------------------FUNCIONES-----------------------
+GO
+CREATE OR ALTER function ObtenerDireccion(@Id int)
+ returns varchar(100)
+ as
+ begin
+	DECLARE @CodigoPost int, @Direccion varchar(100)
+	SET @CodigoPost = (SELECT C.CodigoPostal FROM Direcciones AS D INNER JOIN CodigosPostales AS C ON D.IdCodigoPostal = C.IdCodigoPostal WHERE D.IdDireccion = @Id);
+	SET @Direccion =  (SELECT CONCAT(D.Calle,' COL: ',C.NombreColonia, ' C.P: ', CP.CodigoPostal, ' ', M.NombreMunicipio, ' ', E.nombreEstado) FROM DIrecciones AS D
+	INNER JOIN Colonias AS C ON D.IdColonia = C.IdColonia INNER JOIN CodigosPostales AS CP ON CP.IdCodigoPostal = D.IdCodigoPostal 
+	INNER JOIN Municipios AS M ON M.IdMunicipio = D.IdMunicipio INNER JOIN Estados AS E ON E.IdEstado = D.IdEstado WHERE CP.CodigoPostal = @CodigoPost AND D.IdDireccion = @Id);
+
+	Return @Direccion
+end
+go
+
+CREATE OR ALTER function ObtenerTicket()
+ returns int
+ as
+ begin
+	declare @ID int;
+	set @ID = (SELECT IDENT_CURRENT('Tickets')+1);
+	return @ID;
+end
+go
+
+GO
+
+CREATE OR ALTER FUNCTION validarEmpleado(@Id int,@Clave varchar(15))
+RETURNS VARCHAR(25)
+AS
+BEGIN
+	DECLARE @Valor varchar(20), @ClaveBase varchar(15);
+	SET @Valor = (select P.Nombre from Empleados as E INNER JOIN Personas as P ON E.IdPersona = P.IdPersona where E.IdEmpleado = @Id)
+	IF @Valor IS NULL
+	BEGIN
+	Return 'NotFound'
+	END
+	ELSE
+	BEGIN
+		SET @ClaveBase = (SELECT Clave FROM Empleados where IdEmpleado = @Id);
+		IF @ClaveBase = @Clave
+		BEGIN
+		Return 'Correct'
+		END
+		ELSE
+		BEGIN
+		Return 'Incorrect'
+		END
+	END
+	return 'Proceso fallido'
+END
+GO
 ---------------------------------------VISTAS-----------------------
 GO 
 CREATE OR ALTER VIEW Perfil
@@ -252,47 +376,10 @@ AS
 SELECT T.IdCliente, COUNT(T.IdCliente) as Compras, SUM(T.Total) as Total FROM Ventas as V INNER JOIN Tickets as T ON V.Ticket = T.Ticket INNER JOIN Clientes as C ON T.IdCliente = C.IdCliente GROUP BY T.IdCliente
 GO
 
-CREATE VIEW vistaTicket
+CREATE OR ALTER VIEW vistaTicket
 as
 	select v.IdVenta ,p.Nombre as Producto, v.Cantidad, v.Precio,v.Monto  from Ventas as v INNER JOIN Productos as p ON v.IdProducto = p.IdProducto where v.Ticket = dbo.obtenerTicket();
 go
-
-select * from Ventas
-select * from Tickets
-select * from Personas
-
-
-
----------------------------------------FUNCIONES-----------------------
-GO
-
-CREATE OR ALTER FUNCTION validarEmpleado(@Id int,@Clave varchar(15))
-RETURNS VARCHAR(25)
-AS
-BEGIN
-	DECLARE @Valor varchar(20), @ClaveBase varchar(15);
-	SET @Valor = (select P.Nombre from Empleados as E INNER JOIN Personas as P ON E.IdPersona = P.IdPersona where E.IdEmpleado = @Id)
-	IF @Valor IS NULL
-	BEGIN
-	Return 'NotFound'
-	END
-	ELSE
-	BEGIN
-		SET @ClaveBase = (SELECT Clave FROM Empleados where IdEmpleado = @Id);
-		IF @ClaveBase = @Clave
-		BEGIN
-		Return 'Correct'
-		END
-		ELSE
-		BEGIN
-		Return 'Incorrect'
-		END
-	END
-	return 'Proceso fallido'
-END
-GO
-
-
 ---------------------------------------STOCK PROCEDURE-----------------------
 GO
 
@@ -673,7 +760,6 @@ SELECT IDENT_CURRENT('Proveedores') as Id;
 END
 GO
 
-select * from Proveedores
 
 -- Productos
 GO
@@ -825,31 +911,6 @@ GO
 
 --Ventas
 
-CREATE OR ALTER function ObtenerTicket()
- returns int
- as
- begin
-	declare @ID int;
-	set @ID = (SELECT IDENT_CURRENT('Tickets')+1);
-	return @ID;
-end
-go
-
-CREATE OR ALTER function ObtenerDireccion(@Id int)
- returns varchar(100)
- as
- begin
-	DECLARE @CodigoPost int, @Direccion varchar(100)
-	SET @CodigoPost = (SELECT C.CodigoPostal FROM Direcciones AS D INNER JOIN CodigosPostales AS C ON D.IdCodigoPostal = C.IdCodigoPostal WHERE D.IdDireccion = @Id);
-	SET @Direccion =  (SELECT CONCAT(D.Calle,' COL: ',C.NombreColonia, ' C.P: ', CP.CodigoPostal, ' ', M.NombreMunicipio, ' ', E.nombreEstado) FROM DIrecciones AS D
-	INNER JOIN Colonias AS C ON D.IdColonia = C.IdColonia INNER JOIN CodigosPostales AS CP ON CP.IdCodigoPostal = D.IdCodigoPostal 
-	INNER JOIN Municipios AS M ON M.IdMunicipio = D.IdMunicipio INNER JOIN Estados AS E ON E.IdEstado = D.IdEstado WHERE CP.CodigoPostal = @CodigoPost AND D.IdDireccion = @Id);
-
-	Return @Direccion
-end
-go
-
-
 CREATE OR ALTER PROCEDURE SP_Ventas(
 	@IdProducto int,
 	@Cantidad smallint
@@ -949,10 +1010,6 @@ BEGIN
 END
 GO
 
-select * from Direcciones
-select * from Ventas
-select * from Sucursales
-GO
 ---------------------------------------TRIGGERS-----------------------
 
 --Ventas
@@ -977,16 +1034,353 @@ UPDATE Productos SET Productos.Stock=Productos.Stock-inserted.Cantidad FROM inse
 INNER JOIN Productos ON Productos.idProducto=inserted.idProducto
 GO
 
-SELECT * FROM Ventas
-go
+
+CREATE OR ALTER PROCEDURE SP_Session(@ID int, @Tabla varchar(50))
+AS
+BEGIN
+	DELETE TempSessions;
+	INSERT INTO TempSessions VALUES (@ID,@Tabla)
+	SELECT IdEmpleado as Empleado, Tabla FROM TempSessions
+END
+GO
+
+CREATE OR ALTER TRIGGER TR_RegistroProductos
+ON Productos
+AFTER INSERT, UPDATE, DELETE
+AS
+BEGIN
+	DECLARE @Empleado INT, @Tabla varchar(50);
+	SET @Empleado = (SELECT IdEmpleado FROM TempSessions);
+	SET @Tabla = (SELECT Tabla FROM TempSessions);
+
+	IF @Empleado IS NOT NULL
+	BEGIN
+
+		IF EXISTS (SELECT * FROM INSERTED) AND EXISTS (SELECT * FROM DELETED)
+		BEGIN
+			IF(SELECT Nombre FROM INSERTED) != (SELECT Nombre FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroProductos SELECT I.IdProducto, GETDATE(),'UPDATE','Nombre',D.Nombre, I.Nombre,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdProducto = D.IdProducto
+			END
+			IF(SELECT IdCategoria FROM INSERTED) != (SELECT IdCategoria FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroProductos SELECT I.IdProducto, GETDATE(),'UPDATE','IdCategoria',D.IdCategoria, I.IdCategoria,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdProducto = D.IdProducto
+			END
+			IF(SELECT PrecioCompra FROM INSERTED) != (SELECT PrecioCompra FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroProductos SELECT I.IdProducto, GETDATE(),'UPDATE','PrecioCompra',D.PrecioCompra, I.PrecioCompra,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdProducto = D.IdProducto
+			END
+			IF(SELECT PrecioVenta FROM INSERTED) != (SELECT PrecioVenta FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroProductos SELECT I.IdProducto, GETDATE(),'UPDATE','PrecioVenta',D.PrecioVenta, I.PrecioVenta,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdProducto = D.IdProducto
+			END
+			IF(SELECT Stock FROM INSERTED) != (SELECT Stock FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroProductos SELECT I.IdProducto, GETDATE(),'UPDATE','Stock',D.Stock, I.Stock,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdProducto = D.IdProducto
+			END
+			IF(SELECT IdProveedor FROM INSERTED) != (SELECT IdProveedor FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroProductos SELECT I.IdProducto, GETDATE(),'UPDATE','IdProveedor',D.IdProveedor, I.IdProveedor,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdProducto = D.IdProducto
+			END
+		END
+		ELSE
+		BEGIN
+			IF EXISTS (SELECT * FROM INSERTED)
+			BEGIN
+				INSERT INTO RegistroProductos SELECT IdProducto, GETDATE(),'INSERT','ALL','NE', Nombre,@Empleado FROM INSERTED
+			END
+
+			 IF EXISTS (SELECT * FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroProductos SELECT IdProducto, GETDATE(), 'DELETE','ALL',Nombre,'NE',@Empleado FROM DELETED
+			END
+		END
+		IF @Tabla = 'Productos'
+		BEGIN
+			DELETE TempSessions;
+		END
+	END
+END
+GO
+
+CREATE OR ALTER TRIGGER TR_RegistroCategorias
+ON Categorias
+AFTER INSERT, UPDATE, DELETE
+AS
+BEGIN
+	DECLARE @Empleado INT, @Tabla varchar(50);
+	SET @Empleado = (SELECT IdEmpleado FROM TempSessions);
+	SET @Tabla = (SELECT Tabla FROM TempSessions);
+
+	IF @Empleado IS NOT NULL
+	BEGIN
+
+		IF EXISTS (SELECT * FROM INSERTED) AND EXISTS (SELECT * FROM DELETED)
+		BEGIN
+			IF(SELECT Categoria FROM INSERTED) != (SELECT Categoria FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroCategorias SELECT I.IdCategoria, GETDATE(),'UPDATE','Categoria',D.Categoria, I.Categoria,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdCategoria = D.IdCategoria
+			END
+		END
+		ELSE
+		BEGIN
+			IF EXISTS (SELECT * FROM INSERTED)
+			BEGIN
+				INSERT INTO RegistroCategorias SELECT IdCategoria, GETDATE(),'INSERT','ALL','NE', Categoria,@Empleado FROM INSERTED
+			END
+
+			 IF EXISTS (SELECT * FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroCategorias SELECT IdCategoria, GETDATE(), 'DELETE','ALL',Categoria,'NE',@Empleado FROM DELETED
+			END
+		END
+	END
+	IF @Tabla = 'Categorias'
+	BEGIN
+		DELETE TempSessions;
+	END
+END
+GO
+
+CREATE OR ALTER TRIGGER TR_RegistroProveedores
+ON Proveedores
+AFTER INSERT, UPDATE, DELETE
+AS
+BEGIN
+	DECLARE @Empleado INT, @Tabla varchar(50);
+	SET @Empleado = (SELECT IdEmpleado FROM TempSessions);
+	SET @Tabla = (SELECT Tabla FROM TempSessions);
+
+	IF @Empleado IS NOT NULL
+	BEGIN
+
+		IF EXISTS (SELECT * FROM INSERTED) AND EXISTS (SELECT * FROM DELETED)
+		BEGIN
+			IF(SELECT Proveedor FROM INSERTED) != (SELECT Proveedor FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroProveedores SELECT I.IdProveedor, GETDATE(),'UPDATE','Proveedor',D.Proveedor, I.Proveedor,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdProveedor = D.IdProveedor
+			END
+			IF(SELECT Telefono FROM INSERTED) != (SELECT Telefono FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroProveedores SELECT I.IdProveedor, GETDATE(),'UPDATE','Telefono',D.Telefono, I.Telefono,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdProveedor = D.IdProveedor
+			END
+			IF(SELECT IdDireccion FROM INSERTED) != (SELECT IdDireccion FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroProveedores SELECT I.IdProveedor, GETDATE(),'UPDATE','IdDireccion',D.IdDireccion, I.IdDireccion,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdProveedor = D.IdProveedor
+			END
+		END
+		ELSE
+		BEGIN
+			IF EXISTS (SELECT * FROM INSERTED)
+			BEGIN
+				INSERT INTO RegistroProveedores SELECT IdProveedor, GETDATE(),'INSERT','ALL','NE', Proveedor,@Empleado FROM INSERTED
+			END
+
+			 IF EXISTS (SELECT * FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroProveedores SELECT IdProveedor, GETDATE(), 'DELETE','ALL',Proveedor,'NE',@Empleado FROM DELETED
+			END
+		END
+	END
+	IF @Tabla = 'Proveedores'
+	BEGIN
+		DELETE TempSessions;
+	END
+END
+GO
 
 
-SP_Ventas 2, 2
+CREATE OR ALTER TRIGGER TR_RegistroSucursales
+ON Sucursales
+AFTER INSERT, UPDATE, DELETE
+AS
+BEGIN
+	DECLARE @Empleado INT, @Tabla varchar(50);
+	SET @Empleado = (SELECT IdEmpleado FROM TempSessions);
+	SET @Tabla = (SELECT Tabla FROM TempSessions);
 
-EXEC SP_Tickets 1,1
+	IF @Empleado IS NOT NULL
+	BEGIN
 
-SELECT * from VEntas
-Select * from Tickets
+		IF EXISTS (SELECT * FROM INSERTED) AND EXISTS (SELECT * FROM DELETED)
+		BEGIN
+			IF(SELECT Nombre FROM INSERTED) != (SELECT Nombre FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroSucursales SELECT I.IdSucursal, GETDATE(),'UPDATE','Nombre',D.Nombre, I.Nombre,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdSucursal = D.IdSucursal
+			END
+			IF(SELECT IdDireccion FROM INSERTED) != (SELECT IdDireccion FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroSucursales SELECT I.IdSucursal, GETDATE(),'UPDATE','IdDireccion',D.IdDireccion, I.IdDireccion,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdSucursal = D.IdSucursal
+			END
+		END
+		ELSE
+		BEGIN
+			IF EXISTS (SELECT * FROM INSERTED)
+			BEGIN
+				INSERT INTO RegistroSucursales SELECT IdSucursal, GETDATE(),'INSERT','ALL','NE', Nombre,@Empleado FROM INSERTED
+			END
+
+			 IF EXISTS (SELECT * FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroSucursales SELECT IdSucursal, GETDATE(), 'DELETE','ALL',Nombre,'NE',@Empleado FROM DELETED
+			END
+		END
+	END
+	IF @Tabla = 'Sucursales'
+	BEGIN
+		DELETE TempSessions;
+	END
+END
+GO
+
+CREATE OR ALTER TRIGGER TR_RegistroClientes
+ON Clientes
+AFTER INSERT, UPDATE, DELETE
+AS
+BEGIN
+	DECLARE @Empleado INT, @Tabla varchar(50);
+	SET @Empleado = (SELECT IdEmpleado FROM TempSessions);
+	SET @Tabla = (SELECT Tabla FROM TempSessions);
+
+	IF @Empleado IS NOT NULL
+	BEGIN
+
+		IF EXISTS (SELECT * FROM INSERTED) AND EXISTS (SELECT * FROM DELETED)
+		BEGIN
+			IF(SELECT IdPersona FROM INSERTED) != (SELECT IdPersona FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroClientes SELECT I.IdCliente, GETDATE(),'UPDATE','IdPersona',D.IdPersona, I.IdPersona,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdCliente = D.IdCliente
+			END
+		END
+		ELSE
+		BEGIN
+			IF EXISTS (SELECT * FROM INSERTED)
+			BEGIN
+				INSERT INTO RegistroClientes SELECT IdCliente, GETDATE(),'INSERT','ALL','NE', IdPersona,@Empleado FROM INSERTED
+			END
+
+			 IF EXISTS (SELECT * FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroClientes SELECT IdCliente, GETDATE(), 'DELETE','ALL',IdPersona,'NE',@Empleado FROM DELETED
+			END
+		END
+	END
+	IF @Tabla = 'Clientes'
+	BEGIN
+		DELETE TempSessions;
+	END
+END
+GO
+
+CREATE OR ALTER TRIGGER TR_RegistroPersonas
+ON Personas
+AFTER INSERT, UPDATE, DELETE
+AS
+BEGIN
+	DECLARE @Empleado INT, @Tabla varchar(50);
+	SET @Empleado = (SELECT IdEmpleado FROM TempSessions);
+	SET @Tabla = (SELECT Tabla FROM TempSessions);
+
+	IF @Empleado IS NOT NULL
+	BEGIN
+
+		IF EXISTS (SELECT * FROM INSERTED) AND EXISTS (SELECT * FROM DELETED)
+		BEGIN
+			IF(SELECT Nombre FROM INSERTED) != (SELECT Nombre FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroPersonas SELECT I.IdPersona, GETDATE(),'UPDATE','Nombre',D.Nombre, I.Nombre,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdPersona = D.IdPersona
+			END
+			IF(SELECT CorreoElectronico FROM INSERTED) != (SELECT CorreoElectronico FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroPersonas SELECT I.IdPersona, GETDATE(),'UPDATE','CorreoElectronico',D.CorreoElectronico, I.CorreoElectronico,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdPersona = D.IdPersona
+			END
+			IF(SELECT Telefono FROM INSERTED) != (SELECT Telefono FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroPersonas SELECT I.IdPersona, GETDATE(),'UPDATE','Telefono',D.Telefono, I.Telefono,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdPersona = D.IdPersona
+			END
+			IF(SELECT IdDireccion FROM INSERTED) != (SELECT IdDireccion FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroPersonas SELECT I.IdPersona, GETDATE(),'UPDATE','IdDireccion',D.IdDireccion, I.IdDireccion,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdPersona = D.IdPersona
+			END
+		END
+		ELSE
+		BEGIN
+			IF EXISTS (SELECT * FROM INSERTED)
+			BEGIN
+				INSERT INTO RegistroPersonas SELECT IdPersona, GETDATE(),'INSERT','ALL','NE', Nombre,@Empleado FROM INSERTED
+			END
+
+			 IF EXISTS (SELECT * FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroPersonas SELECT IdPersona, GETDATE(), 'DELETE','ALL',Nombre,'NE',@Empleado FROM DELETED
+			END
+		END
+	END
+	IF @Tabla = 'Personas'
+	BEGIN
+		DELETE TempSessions;
+	END
+END
+GO
+
+CREATE OR ALTER TRIGGER TR_RegistroEmpleados
+ON Empleados
+AFTER INSERT, UPDATE, DELETE
+AS
+BEGIN
+	DECLARE @Empleado INT, @Tabla varchar(50);
+	SET @Empleado = (SELECT IdEmpleado FROM TempSessions);
+	SET @Tabla = (SELECT Tabla FROM TempSessions);
+
+	IF @Empleado IS NOT NULL
+	BEGIN
+
+		IF EXISTS (SELECT * FROM INSERTED) AND EXISTS (SELECT * FROM DELETED)
+		BEGIN
+			IF(SELECT IdPersona FROM INSERTED) != (SELECT IdPersona FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroEmpleados SELECT I.IdEmpleado, GETDATE(),'UPDATE','Nombre',D.IdPersona, I.IdPersona,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdEmpleado = D.IdEmpleado
+			END
+			IF(SELECT IdRol FROM INSERTED) != (SELECT IdRol FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroEmpleados SELECT I.IdEmpleado, GETDATE(),'UPDATE','Nombre',D.IdRol, I.IdRol,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdEmpleado = D.IdEmpleado
+			END
+			IF(SELECT Clave FROM INSERTED) != (SELECT Clave FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroEmpleados SELECT I.IdEmpleado, GETDATE(),'UPDATE','Nombre',D.Clave, I.Clave,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdEmpleado = D.IdEmpleado
+			END
+			IF(SELECT Sueldo FROM INSERTED) != (SELECT Sueldo FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroEmpleados SELECT I.IdEmpleado, GETDATE(),'UPDATE','Nombre',D.Sueldo, I.Sueldo,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdEmpleado = D.IdEmpleado
+			END
+			IF(SELECT Estatus FROM INSERTED) != (SELECT Estatus FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroEmpleados SELECT I.IdEmpleado, GETDATE(),'UPDATE','Nombre',D.Estatus, I.Estatus,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdEmpleado = D.IdEmpleado
+			END
+			IF(SELECT Sucursal FROM INSERTED) != (SELECT Sucursal FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroEmpleados SELECT I.IdEmpleado, GETDATE(),'UPDATE','Nombre',D.Sucursal, I.Sucursal,@Empleado FROM INSERTED AS I INNER JOIN DELETED AS D ON I.IdEmpleado = D.IdEmpleado
+			END
+		END
+		ELSE
+		BEGIN
+			IF EXISTS (SELECT * FROM INSERTED)
+			BEGIN
+				INSERT INTO RegistroEmpleados SELECT IdEmpleado, GETDATE(),'INSERT','ALL','NE', IdEmpleado,@Empleado FROM INSERTED
+			END
+
+			 IF EXISTS (SELECT * FROM DELETED)
+			BEGIN
+				INSERT INTO RegistroEmpleados SELECT IdEmpleado, GETDATE(), 'DELETE','ALL',IdEmpleado,'NE',@Empleado FROM DELETED
+			END
+		END
+	END
+	IF @Tabla = 'Empleados'
+	BEGIN
+		DELETE TempSessions;
+	END
+END
+GO
 ---
 
 EXEC SP_InsertDireccion 1, 1, 20, 6487, 1276, 'Vallarta 78'
@@ -1057,9 +1451,9 @@ EXEC SP_InsertProductos 'Kingston DataTraveler 100 G3 128GB USB', 5, 400, 480, 1
 EXEC SP_InsertProductos 'Razer BlackWidow Keyboard', 6, 3000, 3600, 40, 5
 EXEC SP_InsertProductos 'Razer DeathAdder V2 Mouse', 6, 1500,1800, 60,5
 
-select * From Categorias
-select * From Proveedores
-select * From Tickets
+select * From RegistroPersonas
+select * From RegistroEmpleados
+select * From Empleados
 
 select * From Guanajuato$ where d_asenta = 'San Javier'
 

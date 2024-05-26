@@ -100,3 +100,17 @@ export const deleteTablas = async (req,res) => {
             console.error("Error:", error.message);
         }
 }
+
+export const setEmpleadoID = async (req,res) => {
+    try {
+     const pool = await getConnection();
+ 
+     const result = await pool.request()
+     .input("Tabla",sql.VarChar,req.params.tabla)
+     .input("Empleado",sql.Int,req.session.user)
+     .query('EXEC SP_Session @Empleado, @tabla')
+     return res.json(result.recordset[0]);
+    } catch(error) {
+     return res.status(404).json({message : error.message});
+    }    
+ } 

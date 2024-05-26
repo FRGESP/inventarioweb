@@ -44,7 +44,7 @@ async function crearFormularioEditar() {
           console.log("El id es: "+ `in${elemento}`);
           document.getElementById(elemento).textContent = "Categoría:"
           document.getElementById(elemento).appendChild(selectCategoria);
-          obtenerOpciones("SP_ObtenerCategorias",selectCategoria,valores[0].IdCategoria);
+          obtenerOpciones("SP_ObtenerCategorias",selectCategoria,valores[0].Categoria);
         } else if(elemento == "IdProveedor") {
             const selectProveedor = crearElementoHTML("select");
             selectProveedor.classList.add("form-select","form-control-sm");
@@ -53,7 +53,7 @@ async function crearFormularioEditar() {
             console.log("El id es: "+ `in${elemento}`);
             document.getElementById(elemento).textContent = "Proveedor:"
             document.getElementById(elemento).appendChild(selectProveedor);
-            obtenerOpciones("SP_ObtenerProveedores",selectProveedor,valores[0].IdProveedor);
+            obtenerOpciones("SP_ObtenerProveedores",selectProveedor,valores[0].Proveedor);
         } else {
           crearInput(elemento,valores[0][`${elemento}`]);
         }
@@ -66,7 +66,6 @@ async function crearFormularioEditar() {
 async function crearFormularioCrear() {
  const Titulo = "Agregar Producto"
   const nombreDelId = "IdProducto"
-  const opcionesSelect2 = ["Activo","Despedido","Ausente"];
 
   document.querySelector(".tituloModal").textContent = Titulo;
   const resJson = await obtenerColumnas(tablaColumnasCrear) 
@@ -125,6 +124,7 @@ async function obtenerDatosTabla() {
 
 //Funcion para borrar los elementos de la tabla
 async function eliminarElementos() {
+  const setID = await setEmpleadoID()
   const res = await fetch(`${API}deleteTablas/${stockDeleteElement}/${valorInputBarra.value}`, {
     method : "DELETE",
     headers: {
@@ -195,7 +195,7 @@ async function obtenerColumnas(tabla) {
 
 
 async function enviarFormulario(id,accion,nombreId,ruta,columnas) {
-
+  const setID = await setEmpleadoID()
   let bodyData = {};
   columnas.forEach(columna => {
     if(columna != nombreId) {
@@ -234,6 +234,7 @@ async function enviarFormulario(id,accion,nombreId,ruta,columnas) {
       }
       console.log(resJson);
       crearAlerta("success", "Operacion Completada");
+      deshabilitarElementos();
   } else {
       crearAlerta("danger", "No se pudo hacer la operacion");
   }
@@ -402,4 +403,16 @@ $("#selectBuscar").on("change keyup paste", function(){
 function botonesID(boton) {
     valorInputBarra.value = boton.id;
     document.getElementById("selectBuscar").value = "ID";
+}
+
+async function setEmpleadoID() {
+  const res = await fetch(API+"setEmpleadoID/"+"Productos");
+
+  if(res.ok) {
+      const resJSON = await res.json();
+      console.log("El empleado con el ID: "+ resJSON.Empleado)
+  } else {
+      alert("No se ha podido establecer conexion");
+  }
+  return "ok"
 }

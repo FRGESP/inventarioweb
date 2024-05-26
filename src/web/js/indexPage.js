@@ -20,6 +20,7 @@ async function ingresar() {
         const respuesta = resJson.Respuesta;
         if(respuesta == "Correct") {
             crearAlerta("success","Contraseña Correcta")
+            //setEmpleadoID()
             window.location.href = '/'+'inicio'
         }
         if(respuesta == "Incorrect") {
@@ -38,6 +39,16 @@ async function ingresar() {
     }
 }
 
+async function setEmpleadoID() {
+    const res = await fetch(API+"setEmpleadoID");
+
+    if(res.ok) {
+        const resJSON = await res.json();
+        console.log("El empleado con el ID: "+ resJSON.Empleado)
+    } else {
+        alert("No se ha podido establecer conexion");
+    }
+}
 
 function crearAlerta(tipo,texto){
     const divAlerta = document.createElement("div");
