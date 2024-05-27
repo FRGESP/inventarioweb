@@ -23,7 +23,22 @@ export const obtenerNombreCliente = async (req, res) => {
 export const getTotal =  async (req, res) => {
   try {
     const pool = await getConnection();
-    const result = await pool.request().query('EXEC SP_ObtenerTotal');
+    const result = await pool.request()
+    .input("USER",sql.Int,req.session.user)
+    .query('EXEC SP_ObtenerTotal @USER');
+    res.json(result.recordset[0]);
+  }catch {
+    console.error("Error:", error.message);
+    return res.status(404).json({ message: error.message });
+  }
+}
+
+export const getClienteActual=  async (req, res) => {
+  try {
+    const pool = await getConnection();
+    const result = await pool.request()
+    .input("USER",sql.Int,req.session.user)
+    .query('EXEC SP_ObtenerClienteActual @USER');
     res.json(result.recordset[0]);
   }catch {
     console.error("Error:", error.message);
@@ -37,7 +52,9 @@ export const subbirProductoVenta = async (req, res) => {
     const result = await pool.request()
       .input('Producto',sql.Int,req.body.Producto)
       .input('Cantidad',sql.Int,req.body.Cantidad)
-      .query("EXEC SP_Ventas @Producto, @Cantidad");
+      .input('Cliente',sql.Int,req.body.Cliente)
+      .input("USER",sql.Int,req.session.user)
+      .query("EXEC SP_Ventas @Producto, @Cantidad, @USER, @Cliente");
       return res.status(200).json({ message: "OK" }); 
   } catch (error) {
     console.error("Error:", error.message);
@@ -50,9 +67,8 @@ export const subbirVenta = async (req, res) => {
   try {
     const pool = await getConnection();
     const result = await pool.request()
-      .input('Cliente',sql.Int,req.body.Cliente)
       .input('Empleado',sql.Int,req.session.user)
-      .query("EXEC SP_Tickets @Cliente, @Empleado");
+      .query("EXEC SP_Tickets @Empleado");
       return res.status(200).json({ message: "OK" }); 
   } catch (error) {
     console.error("Error:", error.message);
@@ -134,7 +150,8 @@ function buildPDF(dataCallback, endCallback,cliente,empleado,venta) {
 export const getTicket = async (req, res) => {
   try{const pool = await getConnection();
   const result = await pool.request()
-  .query("EXEC SP_ImprimirTicket") 
+  .input("USER",sql.Int,req.session.user)
+  .query("EXEC SP_ImprimirTicket @USER") 
 
   if (result.recordsets === 0)
   {
@@ -159,3 +176,16 @@ export const getTicket = async (req, res) => {
       return res.status(404).json({message : error.message})
   }
 };
+
+export const getvistaTicket = async (req,res) => {
+  try{
+      const pool = await getConnection();
+      const result = await pool.request()
+      .input("USER",sql.Int,req.session.user)
+      .query(`EXEC SP_TicketActualVista @USER`)
+      return res.json(result.recordset);
+  } catch(error) {
+      console.error("Error:", error.message);
+      return res.status(404).json({message : error.message})
+  }
+}

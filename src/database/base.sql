@@ -235,6 +235,12 @@ CONSTRAINT PK_RegistroEmpleados PRIMARY KEY(IdRegistro),
 CONSTRAINT FK_RegistroEmpleadosToEmpleados FOREIGN KEY(Empleado) REFERENCES Empleados(IdEmpleado) on delete cascade
 );
 
+Create Table TempVentas(
+IdEmpleado int not null,
+Ticket int not null,
+Cliente int not null
+);
+
 CREATE TABLE Ventas(
 IdVenta int not null identity,
 IdProducto int not null,
@@ -254,11 +260,13 @@ Fecha date not null,
 IdCliente int foreign key references Clientes(IdCliente) on delete cascade,
 Sucursal int,
 Empleado int,
+NumTicket int,
 CONSTRAINT PK_Tickets PRIMARY KEY(Ticket),
 CONSTRAINT FK_TicketsToClientes FOREIGN KEY(IdCliente) REFERENCES Clientes(IdCliente) on DELETE NO ACTION,
 CONSTRAINT FK_TicketsToSucursales FOREIGN KEY(Sucursal) REFERENCES Sucursales(IdSucursal) ON DELETE NO ACTION,
 CONSTRAINT FK_TicketsToEmpleados FOREIGN KEY(Empleado) REFERENCES Empleados(IdEmpleado) ON DELETE NO ACTION
 );
+
 
 ---------------------------------------CCODIGOS POSTALES-----------------------
 insert into Paises values('Mexico');
@@ -266,6 +274,10 @@ insert into Estados select distinct d_estado, 1 from Guanajuato$ where d_estado 
 insert into Municipios (nombreMunicipio,idEstado)  select DISTINCT G.D_mnpio, E.idEstado   from Guanajuato$ as G inner join Estados as E on G.d_estado = E.nombreEstado ;
 insert into CodigosPostales (codigoPostal,idMunicipio) select DISTINCT G.d_codigo, M.idMunicipio from Guanajuato$ as G inner join Municipios as M on G.D_mnpio = M.nombreMunicipio;
 insert into Colonias (nombreColonia, idCodigoPostal) select DISTINCT G.d_asenta, CP.idCodigoPostal from Guanajuato$ as G inner join CodigosPostales as CP on G.d_codigo = CP.CodigoPostal;
+---------------------------------------SECUENCIAS-----------------------
+CREATE SEQUENCE NumTicket
+    START WITH 1
+    INCREMENT BY 1;
 ---------------------------------------FUNCIONES-----------------------
 GO
 CREATE OR ALTER function ObtenerDireccion(@Id int)
@@ -918,68 +930,65 @@ GO
 
 CREATE OR ALTER PROCEDURE SP_Ventas(
 	@IdProducto int,
-	@Cantidad smallint
+	@Cantidad smallint,
+	@IdEmpleado int,
+	@Cliente int
 )
 AS
 BEGIN
 	declare @Monto money, @Precio money;
 
-	IF (select SUM(Cantidad) from Ventas where Ticket = 2) IS NULL AND (select dbo.ObtenerTicket()) < 3
-	BEGIN 
-		
-		set @Precio = (select PrecioVenta from Productos where IdProducto = @IdProducto)
-		select @Monto = @Cantidad*@Precio;
-		insert into Ventas values (@IdProducto,@Cantidad,@Precio,1,@Monto);
+	IF(SELECT Ticket FROM Tempventas where IdEmpleado = @IdEmpleado) IS NULL
+	BEGIN
+		INSERT INTO TempVentas VALUES(@IdEmpleado,(NEXT VALUE FOR NumTicket),@Cliente)
 	END
-	ELSE
-	BEGIN 
-		declare @NumTicket int
-		set @Precio = (select PrecioVenta from Productos where IdProducto = @IdProducto)
-		select @Monto = @Cantidad*@Precio;
-		set @NumTicket = (SELECT IDENT_CURRENT('Tickets')+1);
-		insert into Ventas values (@IdProducto,@Cantidad,@Precio,@NumTicket,@Monto);
-	END
+
+	declare @NumTicket int
+	set @Precio = (select PrecioVenta from Productos where IdProducto = @IdProducto)
+	select @Monto = @Cantidad*@Precio;
+	set @NumTicket = (SELECT Ticket FROM Tempventas where IdEmpleado = @IdEmpleado);
+	insert into Ventas values (@IdProducto,@Cantidad,@Precio,@NumTicket,@Monto);
 
 END
 go
 
-CREATE OR ALTER PROCEDURE SP_Tickets (@IdCliente int, @IdEmpleado int)
+CREATE OR ALTER PROCEDURE SP_ObtenerClienteActual(@IdEmpleado int)
+AS
+BEGIN
+	DECLARE @Res int;
+	SET @Res = (SELECT Cliente FROM TempVentas WHERE IdEmpleado = @IdEmpleado)
+	IF(@Res IS NULL)
+	BEGIN
+		SELECT 0 AS Cliente;
+	END
+	ELSE
+	BEGIN
+		SELECT @Res AS Cliente
+	END
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_Tickets (@IdEmpleado int)
 as
 begin
 	
-	declare @CantidadTotal int, @Total money, @Id int, @Sucursal int;
+	declare @CantidadTotal int, @Total money, @Id int, @Sucursal int,@IdCliente int;
 
 	SET @Sucursal = (SELECT Sucursal FROM Empleados WHERE IdEmpleado = @IdEmpleado);
+	SET @IdCliente = (SELECT Cliente FROM Tempventas where IdEmpleado = @IdEmpleado);
 
-	IF (select SUM(Cantidad) from Ventas where Ticket = 2) IS NULL AND (select dbo.ObtenerTicket()) < 3
-	BEGIN 
-		set @Id = 1;
-		set @CantidadTotal = (select SUM(Cantidad) from Ventas where Ticket = @Id);
-		set @Total = (select SUM(Monto) from Ventas where Ticket = @Id)
-		insert into Tickets values (@CantidadTotal,@Total,GETDATE(),@IdCliente,@Sucursal,@IdEmpleado);
-	END
-	ELSE
-	BEGIN 
-		set @Id = (SELECT IDENT_CURRENT('Tickets')+1);
-		set @CantidadTotal = (select SUM(Cantidad) from Ventas where Ticket = @Id);
-		set @Total = (select SUM(Monto) from Ventas where Ticket = @Id)
-		insert into Tickets values (@CantidadTotal,@Total,GETDATE(),@IdCliente,@Sucursal,@IdEmpleado)
-	END
+	set @Id = (SELECT Ticket FROM Tempventas where IdEmpleado = @IdEmpleado);
+	set @CantidadTotal = (select SUM(Cantidad) from Ventas where Ticket = @Id);
+	set @Total = (select SUM(Monto) from Ventas where Ticket = @Id)
+	insert into Tickets values (@CantidadTotal,@Total,GETDATE(),@IdCliente,@Sucursal,@IdEmpleado,@Id)
 end;
 go
 
 
-CREATE OR ALTER PROCEDURE SP_TicketActualVista
+CREATE OR ALTER PROCEDURE SP_TicketActualVista(@IdEmpleado int)
 AS
 BEGIN
-	IF (select SUM(Cantidad) from Ventas where Ticket = 2) IS NULL AND (select dbo.ObtenerTicket()) < 3
-		BEGIN 
-			SELECT VT.IdVenta, VT.Producto, VT.Cantidad, VT.Precio, VT.Monto FROM vistaTicket AS VT INNER JOIN Ventas as V ON V.IdVenta = VT.IdVenta where Ticket = 1;
-		END
-	ELSE
-	BEGIN 
-		SELECT VT.IdVenta, VT.Producto, VT.Cantidad, VT.Precio, VT.Monto FROM vistaTicket AS VT INNER JOIN Ventas as V ON V.IdVenta = VT.IdVenta where Ticket = dbo.obtenerTicket();
-	END
+	SELECT VT.IdVenta, VT.Producto, VT.Cantidad, VT.Precio, VT.Monto FROM vistaTicket AS VT INNER JOIN Ventas as V ON V.IdVenta = VT.IdVenta where Ticket = (SELECT Ticket FROM Tempventas where IdEmpleado = @IdEmpleado);
  END
 GO
 
@@ -997,28 +1006,22 @@ BEGIN
  END
 GO
 
-CREATE OR ALTER PROCEDURE SP_ObtenerTotal
+CREATE OR ALTER PROCEDURE SP_ObtenerTotal(@IdEmpleado int)
 AS
 BEGIN
-	IF (select SUM(Cantidad) from Ventas where Ticket = 2) IS NULL AND (select dbo.ObtenerTicket()) < 3
-	BEGIN 
-		SELECT SUM(Monto) as Total FROM Ventas WHERE Ticket = 1;
-	END
-	ELSE
-	BEGIN 
-		SELECT SUM(Monto) as Total FROM Ventas WHERE Ticket = dbo.ObtenerTicket();
-	END
+	SELECT SUM(Monto) as Total FROM Ventas WHERE Ticket = (SELECT Ticket FROM Tempventas where IdEmpleado = @IdEmpleado);
 END
 GO
 
-CREATE OR ALTER PROCEDURE SP_ImprimirTicket
+CREATE OR ALTER PROCEDURE SP_ImprimirTicket(@IdEmpleado INT)
 AS
 BEGIN
 	DECLARE @Id int;
-	set @Id = (SELECT IDENT_CURRENT('Tickets'));
+	set @Id = (SELECT Ticket FROM Tempventas where IdEmpleado = @IdEmpleado);
 	SELECT P.IdProducto, P.Nombre, V.Cantidad, V.Precio, V.Monto FROM VENTAS AS v INNER JOIN Productos as P ON P.IdProducto = V.IdProducto WHERE V.Ticket = @Id
-	SELECT C.IdCliente, P.Nombre, T.Total, T.Fecha, T.Ticket FROM Personas AS P INNER JOIN Clientes AS C ON C.IdPersona = P.IdPersona INNER JOIN Tickets AS T ON T.IdCliente = C.IdCliente WHERE T.Ticket = @Id
-	SELECT E.IdEmpleado, P.Nombre AS NombreEmpleado, S.Nombre as Sucursal, dbo.ObtenerDireccion(S.IdDireccion) AS Direccion FROM Empleados AS E INNER JOIN Personas AS  P ON E.IdPersona = P.IdPersona INNER JOIN Tickets AS T ON T.Empleado = E.IdEmpleado INNER JOIN Sucursales AS S ON S.IdSucursal = T.Sucursal WHERE T.Ticket = @Id
+	SELECT C.IdCliente, P.Nombre, T.Total, T.Fecha, T.NumTicket AS Ticket FROM Personas AS P INNER JOIN Clientes AS C ON C.IdPersona = P.IdPersona INNER JOIN Tickets AS T ON T.IdCliente = C.IdCliente WHERE T.NumTicket = @Id
+	SELECT E.IdEmpleado, P.Nombre AS NombreEmpleado, S.Nombre as Sucursal, dbo.ObtenerDireccion(S.IdDireccion) AS Direccion FROM Empleados AS E INNER JOIN Personas AS  P ON E.IdPersona = P.IdPersona INNER JOIN Tickets AS T ON T.Empleado = E.IdEmpleado INNER JOIN Sucursales AS S ON S.IdSucursal = T.Sucursal WHERE T.NumTicket = @Id
+	DELETE FROM TempVentas WHERE IdEmpleado = @IdEmpleado
 END
 GO
 -- RegistroProductos

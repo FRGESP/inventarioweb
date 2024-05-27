@@ -41,6 +41,7 @@ async function subirProducto() {
     body: JSON.stringify({
       Producto: IdProducto.value,
       Cantidad: cantidad.value,
+      Cliente: Idclientevar
     }),
   });
 
@@ -60,18 +61,8 @@ async function subirTicket() {
   const botonBuscar = document.getElementById("botonCliente");
   const cantidad = document.getElementById("inputCantidad");
 
-  const res = await fetch(API + "subirVenta", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      Cliente: Idclientevar
-    }),
-  });
-
+  const res = await fetch(API + "subirVenta");
   if(res.ok) {
-    obtenerDatosTabla();
     IdProducto.value = "";
     cantidad.value = 1;
     IdCliente.value = "";
@@ -80,6 +71,7 @@ async function subirTicket() {
     deshabilitarElementos();
     SacarPDF()
     crearAlerta("success","Venta realizada")
+    obtenerDatosTabla();
   } else {
     crearAlerta("danger","No se pudo realizar la venta. verifique los datos");
   }
@@ -101,6 +93,7 @@ async function SacarPDF() {
       // window.open(url, '_blank');
 
       window.URL.revokeObjectURL(url);
+      obtenerDatosTabla();
   } else {
       console.log("Hubo un error al obtener el PDF");
   }
@@ -124,14 +117,33 @@ async function obtenerTotal() {
   }
 }
 
+async function obtenerClienteAct() {
+  const res = await fetch(API + "obtenerClienteActual");
+
+  if (res.ok) {
+    const resJson = await res.json();
+    return resJson.Cliente
+  } else {
+    crearAlerta("danger", "No se pudo obtener el cliente");
+  }
+}
+
 //Funcion para obtener los datos de la tabla
 async function obtenerDatosTabla() {
-  const res = await fetch(API + "vistaTablas/" + stockGetAllData);
+  const botonBuscar = document.getElementById("botonCliente");
+  const res = await fetch(API + "obtenerTicketVista/");
 
   if (res.ok) {
     const resJson = await res.json();
     console.log(resJson);
     llenarTabla(resJson);
+    const cliente =  await obtenerClienteAct();
+    console.log(cliente)
+    if(cliente != 0 && botonBuscar.style.display != 'none') {
+      document.getElementById("inputCliente").value = cliente;
+      document.getElementById("botonCliente").click();
+      console.log("PASSSA")
+    }
     obtenerTotal();
   } else {
     console.log("No se puedieron obtener");
