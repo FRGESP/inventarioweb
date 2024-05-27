@@ -378,8 +378,13 @@ GO
 
 CREATE OR ALTER VIEW vistaTicket
 as
-	select v.IdVenta ,p.Nombre as Producto, v.Cantidad, v.Precio,v.Monto  from Ventas as v INNER JOIN Productos as p ON v.IdProducto = p.IdProducto where v.Ticket = dbo.obtenerTicket();
+	select v.IdVenta ,p.Nombre as Producto, v.Cantidad, v.Precio,v.Monto  from Ventas as v INNER JOIN Productos as p ON v.IdProducto = p.IdProducto
 go
+
+CREATE OR ALTER VIEW VistaRegistroProductos
+AS
+	SELECT IdRegistro, IdProducto AS Elemento, Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroProductos
+GO
 ---------------------------------------STOCK PROCEDURE-----------------------
 GO
 
@@ -967,7 +972,14 @@ go
 CREATE OR ALTER PROCEDURE SP_TicketActualVista
 AS
 BEGIN
- SELECT * FROM vistaTicket;
+	IF (select SUM(Cantidad) from Ventas where Ticket = 2) IS NULL AND (select dbo.ObtenerTicket()) < 3
+		BEGIN 
+			SELECT VT.IdVenta, VT.Producto, VT.Cantidad, VT.Precio, VT.Monto FROM vistaTicket AS VT INNER JOIN Ventas as V ON V.IdVenta = VT.IdVenta where Ticket = 1;
+		END
+	ELSE
+	BEGIN 
+		SELECT VT.IdVenta, VT.Producto, VT.Cantidad, VT.Precio, VT.Monto FROM vistaTicket AS VT INNER JOIN Ventas as V ON V.IdVenta = VT.IdVenta where Ticket = dbo.obtenerTicket();
+	END
  END
 GO
 
@@ -1008,6 +1020,13 @@ BEGIN
 	SELECT C.IdCliente, P.Nombre, T.Total, T.Fecha, T.Ticket FROM Personas AS P INNER JOIN Clientes AS C ON C.IdPersona = P.IdPersona INNER JOIN Tickets AS T ON T.IdCliente = C.IdCliente WHERE T.Ticket = @Id
 	SELECT E.IdEmpleado, P.Nombre AS NombreEmpleado, S.Nombre as Sucursal, dbo.ObtenerDireccion(S.IdDireccion) AS Direccion FROM Empleados AS E INNER JOIN Personas AS  P ON E.IdPersona = P.IdPersona INNER JOIN Tickets AS T ON T.Empleado = E.IdEmpleado INNER JOIN Sucursales AS S ON S.IdSucursal = T.Sucursal WHERE T.Ticket = @Id
 END
+GO
+-- RegistroProductos
+CREATE OR ALTER PROCEDURE SP_RegistroProductosVista
+AS
+BEGIN
+ SELECT * FROM VistaRegistroProductos
+ END
 GO
 
 ---------------------------------------TRIGGERS-----------------------
@@ -1451,7 +1470,7 @@ EXEC SP_InsertProductos 'Kingston DataTraveler 100 G3 128GB USB', 5, 400, 480, 1
 EXEC SP_InsertProductos 'Razer BlackWidow Keyboard', 6, 3000, 3600, 40, 5
 EXEC SP_InsertProductos 'Razer DeathAdder V2 Mouse', 6, 1500,1800, 60,5
 
-select * From RegistroPersonas
+select * From RegistroProductos
 select * From RegistroEmpleados
 select * From Empleados
 
