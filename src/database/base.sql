@@ -397,6 +397,36 @@ CREATE OR ALTER VIEW VistaRegistroProductos
 AS
 	SELECT IdRegistro, IdProducto AS Elemento, Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroProductos
 GO
+
+CREATE OR ALTER VIEW VistaRegistroCategorias
+AS
+	SELECT IdRegistro, IdCategoria AS Elemento, Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroCategorias
+GO
+
+CREATE OR ALTER VIEW VistaRegistroProveedores
+AS
+	SELECT IdRegistro, IdProveedor AS Elemento, Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroProveedores
+GO
+
+CREATE OR ALTER VIEW VistaRegistroClientes
+AS
+	SELECT IdRegistro, IdCliente AS Elemento, Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroClientes
+GO
+
+CREATE OR ALTER VIEW VistaRegistroSucursales
+AS
+	SELECT IdRegistro, IdSucursal AS Elemento, Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroSucursales
+GO
+
+CREATE OR ALTER VIEW VistaRegistroPersonas
+AS
+	SELECT IdRegistro, IdPersona AS Elemento, Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroPersonas
+GO
+
+CREATE OR ALTER VIEW VistaRegistroEmpleados
+AS
+	SELECT IdRegistro, IdEmpleado AS Elemento, Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroEmpleados
+GO
 ---------------------------------------STOCK PROCEDURE-----------------------
 GO
 
@@ -1030,8 +1060,109 @@ AS
 BEGIN
  SELECT * FROM VistaRegistroProductos
  END
+GO 
+
+CREATE OR ALTER PROCEDURE SP_RegistroProductosVistaFiltro(@filtro varchar(20))
+AS
+BEGIN
+ SELECT * FROM VistaRegistroProductos WHERE Accion = @filtro
+ END
+GO
+-- RegistroCategorias
+
+CREATE OR ALTER PROCEDURE SP_RegistroCategoriasVista
+AS
+BEGIN
+ SELECT * FROM VistaRegistroCategorias
+ END
 GO
 
+CREATE OR ALTER PROCEDURE SP_RegistroCategoriasVistaFiltro(@filtro varchar(20))
+AS
+BEGIN
+ SELECT * FROM VistaRegistroCategorias WHERE Accion = @filtro
+ END
+GO
+
+-- RegistroProveedores
+
+CREATE OR ALTER PROCEDURE SP_RegistroProveedoresVista
+AS
+BEGIN
+ SELECT * FROM VistaRegistroProveedores
+ END
+GO
+
+CREATE OR ALTER PROCEDURE SP_RegistroProveedoresVistaFiltro(@filtro varchar(20))
+AS
+BEGIN
+ SELECT * FROM VistaRegistroProveedores WHERE Accion = @filtro
+ END
+GO
+
+-- RegistroSucursales
+
+CREATE OR ALTER PROCEDURE SP_RegistroSucursalesVista
+AS
+BEGIN
+ SELECT * FROM VistaRegistroSucursales
+ END
+GO
+
+CREATE OR ALTER PROCEDURE SP_RegistroSucursalesVistaFiltro(@filtro varchar(20))
+AS
+BEGIN
+ SELECT * FROM VistaRegistroSucursales WHERE Accion = @filtro
+ END
+GO
+
+-- RegistroClientes
+
+CREATE OR ALTER PROCEDURE SP_RegistroClientesVista
+AS
+BEGIN
+ SELECT * FROM VistaRegistroClientes
+ END
+GO
+
+CREATE OR ALTER PROCEDURE SP_RegistroClientesVistaFiltro(@filtro varchar(20))
+AS
+BEGIN
+ SELECT * FROM VistaRegistroClientes WHERE Accion = @filtro
+ END
+GO
+
+-- RegistroPersonas
+
+CREATE OR ALTER PROCEDURE SP_RegistroPersonasVista
+AS
+BEGIN
+ SELECT * FROM VistaRegistroPersonas
+ END
+GO
+
+CREATE OR ALTER PROCEDURE SP_RegistroPersonasVistaFiltro(@filtro varchar(20))
+AS
+BEGIN
+ SELECT * FROM VistaRegistroPersonas WHERE Accion = @filtro
+ END
+GO
+
+-- RegistroEmpleados
+
+CREATE OR ALTER PROCEDURE SP_RegistroEmpleadosVista
+AS
+BEGIN
+ SELECT * FROM VistaRegistroEmpleados
+ END
+GO
+
+CREATE OR ALTER PROCEDURE SP_RegistroEmpleadosVistaFiltro(@filtro varchar(20))
+AS
+BEGIN
+ SELECT * FROM VistaRegistroEmpleados WHERE Accion = @filtro
+ END
+GO
 ---------------------------------------TRIGGERS-----------------------
 
 --Ventas

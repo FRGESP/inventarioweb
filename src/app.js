@@ -12,6 +12,7 @@ import categoriasRutas from './routes/categorias.routes.js'
 import proveedoresRutas from './routes/proveedores.routes.js'
 import clientesRutas from './routes/clientes.routes.js'
 import ventasRutas from './routes/ventas.routes.js'
+import registrosRutas from './routes/registros.routes.js'
 import session from 'express-session';
 import path from 'path';
 
@@ -47,6 +48,7 @@ app.use(categoriasRutas);
 app.use(proveedoresRutas);
 app.use(clientesRutas);
 app.use(ventasRutas);
+app.use(registrosRutas);
 
 app.use(express.static(path.join(__dirname, 'src', 'web')));
 
