@@ -358,6 +358,11 @@ AS
 SELECT S.IdSucursal, S.Nombre, S.IdDireccion,COUNT(E.IdEmpleado) as CantidadEmpleados,  AVG(E.Sueldo) as AvgSueldo, MAX(E.Sueldo) AS SueldoMax FROM Sucursales as S LEFT JOIN Empleados as E ON S.IdSucursal = E.Sucursal GROUP BY S.IdSucursal, S.Nombre, S.IdDireccion
 GO
 
+CREATE OR ALTER VIEW VistaSucursalesVentas
+AS
+SELECT S.IdSucursal, S.Nombre, SUM(T.Total) AS Total, COUNT(T.Sucursal) AS NUM FROM Sucursales AS S LEFT JOIN Tickets AS T ON T.Sucursal = S.IdSucursal GROUP BY  S.IdSucursal, S.Nombre
+GO
+
 CREATE OR ALTER VIEW VistaCategorias
 AS
 SELECT C.IdCategoria, C.Categoria,COUNT(P.IdCategoria) as CantidadProductos,  AVG(P.PrecioVenta) as AvgPrecio, MAX(P.PrecioVenta) AS PrecioMax FROM Productos as P RIGHT JOIN Categorias as C ON P.IdCategoria = C.IdCategoria GROUP BY C.IdCategoria, C.Categoria
@@ -368,9 +373,19 @@ AS
 SELECT Pr.IdProveedor, Pr.Proveedor,Pr.Telefono,Pr.IdDireccion, COUNT(P.IdProveedor) as CantidadProductos,  AVG(P.PrecioVenta) as AvgPrecio, MAX(P.PrecioVenta) AS PrecioMax FROM Productos as P RIGHT JOIN Proveedores as Pr ON P.IdProveedor = Pr.IdProveedor GROUP BY Pr.IdProveedor, Pr.Proveedor, Pr.IdDireccion,Pr.Telefono, Pr.IdDireccion
 GO
 
+CREATE OR ALTER VIEW VistaProveedoresDireccion
+AS
+SELECT IdProveedor, Proveedor, Telefono, dbo.ObtenerDireccion(IdDireccion) AS Direccion FROM VistaProveedores
+GO
+
 CREATE OR ALTER VIEW VistaProductos
 AS
 SELECT P.IdProducto, P.Nombre, C.Categoria, P.PrecioCompra, P.PrecioVenta, P.Stock, Pr.Proveedor FROM Productos AS P LEFT JOIN Categorias AS C ON P.IdCategoria = C.IdCategoria INNER JOIN Proveedores as Pr ON P.IdProveedor = Pr.IdProveedor
+GO
+
+CREATE OR ALTER VIEW VistaProductosRestock
+AS
+SELECT P.IdProducto, P.Nombre, C.Categoria, P.PrecioCompra, P.PrecioVenta, P.Stock, Pr.Proveedor,Pr.IdProveedor FROM Productos AS P LEFT JOIN Categorias AS C ON P.IdCategoria = C.IdCategoria INNER JOIN Proveedores as Pr ON P.IdProveedor = Pr.IdProveedor
 GO
 
 CREATE OR ALTER VIEW VistaClientes
@@ -426,6 +441,11 @@ GO
 CREATE OR ALTER VIEW VistaRegistroEmpleados
 AS
 	SELECT IdRegistro, IdEmpleado AS Elemento, Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroEmpleados
+GO
+
+CREATE OR ALTER VIEW VistaEditarStock
+AS
+	SELECT IdProducto, Nombre, Stock AS StockAct, Stock FROM Productos
 GO
 ---------------------------------------STOCK PROCEDURE-----------------------
 GO
@@ -784,6 +804,13 @@ BEGIN
 	SELECT * FROM VistaProveedores WHERE IdProveedor = @Id
 END
 GO
+---------------------------------------------------------------------------asccccccccccccccccccccccccvavavav
+CREATE OR ALTER PROCEDURE SP_ProveedoresVistaPorIDConDireccion(@Id int)
+AS
+BEGIN
+	SELECT * FROM VistaProveedoresDireccion WHERE IdProveedor = @Id
+END
+GO
 
 CREATE OR ALTER PROCEDURE SP_ProveedoresVistaPorNombre(@Nombre varchar(50))
 AS
@@ -830,6 +857,77 @@ AS
 BEGIN
  SELECT * FROM VistaProductos
  END
+GO
+
+CREATE OR ALTER PROCEDURE SP_RestockVista
+AS
+BEGIN
+	SELECT * FROM VistaProductosRestock
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_RestockInv(@Id int, @Cantidad int)
+AS
+BEGIN
+	UPDATE Productos SET Stock = Stock+@Cantidad WHERE IdProducto = @Id
+	SELECT IDENT_CURRENT('Productos') as Id;
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_Restock(@Cantidad int)
+AS
+BEGIN
+	SELECT * FROM VistaProductosRestock WHERE STOCK <= @Cantidad
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_RestockId(@Id int)
+AS
+BEGIN
+	SELECT * FROM VistaProductosRestock WHERE IdProducto =  @Id
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_RestockNombre(@Nombre varchar(50))
+AS
+BEGIN
+	SELECT * FROM VistaProductosRestock WHERE Nombre LIKE  '%'+@Nombre+'%'
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_RestockProveedor(@Proveedor int)
+AS
+BEGIN
+	SELECT * FROM VistaProductosRestock WHERE IdProveedor = @Proveedor
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_RestockProveedorCantidad(@Cantidad int, @Proveedor int)
+AS
+BEGIN
+	IF @Proveedor = 0
+	BEGIN
+		SELECT * FROM VistaProductosRestock WHERE STOCK < @Cantidad
+	END
+	ELSE
+		IF @Cantidad = 0
+		BEGIN
+			SELECT * FROM VistaProductosRestock WHERE IdProveedor = @Proveedor
+		END
+		ELSE
+		BEGIN
+			SELECT * FROM VistaProductosRestock WHERE STOCK < @Cantidad AND IdProveedor = @Proveedor
+		END
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ImprimirRestock(@Cantidad int, @Proveedor int, @Id int)
+AS
+BEGIN	
+	EXEC SP_RestockProveedorCantidad @Cantidad, @Proveedor
+	SELECT E.IdEmpleado, P.Nombre AS NombreEmpleado, S.Nombre as Sucursal, dbo.ObtenerDireccion(S.IdDireccion) AS Direccion, GETDATE() AS Fecha, @Cantidad AS Cantidad FROM Empleados AS E INNER JOIN Personas AS  P ON E.IdPersona = P.IdPersona INNER JOIN Sucursales AS S ON S.IdSucursal = E.Sucursal WHERE E.IdEmpleado = @Id
+	EXEC SP_ProveedoresVistaPorIDConDireccion @Proveedor
+END
 GO
 
 CREATE OR ALTER PROCEDURE SP_ProductosVistaPorID(@Id int)
