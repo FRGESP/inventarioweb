@@ -276,7 +276,7 @@ async function enviarFormulario(id,accion,nombreId,ruta,columnas) {
       crearAlerta("success", "Operacion Completada");
   } else {
       crearAlerta("danger", "No se pudo hacer la operacion");
-  }+deshabilitarElementos()
+  }deshabilitarElementos()
   console.log(bodyData);
 }
 

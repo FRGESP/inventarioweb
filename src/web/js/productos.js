@@ -238,6 +238,7 @@ async function enviarFormulario(id,accion,nombreId,ruta,columnas) {
   } else {
       crearAlerta("danger", "No se pudo hacer la operacion");
   }
+  deshabilitarElementos();
   console.log(bodyData);
 }
 

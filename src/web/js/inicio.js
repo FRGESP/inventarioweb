@@ -25,14 +25,3 @@ async function setEmpleadoID() {
         alert("No se ha podido establecer conexion");
     }
 }
-
-// async function cargar() {
-//     const res = await fetch(API + "datos");
-//     if (res.ok) {
-//       const resJson = await res.json();
-//       console.log(resJson.Nombre);
-//       document.getElementById("usuario").textContent = resJson.Nombre;
-//     } else {
-//       console.log("Sesion cerrada");
-//     }
-//   };

@@ -360,7 +360,7 @@ GO
 
 CREATE OR ALTER VIEW VistaSucursalesVentas
 AS
-SELECT S.IdSucursal, S.Nombre, SUM(T.Total) AS Total, COUNT(T.Sucursal) AS NUM FROM Sucursales AS S LEFT JOIN Tickets AS T ON T.Sucursal = S.IdSucursal GROUP BY  S.IdSucursal, S.Nombre
+SELECT S.IdSucursal, S.Nombre, SUM(T.Total) AS Total, COUNT(T.Sucursal) AS NUM FROM Sucursales AS S LEFT JOIN Tickets AS T ON T.Sucursal = S.IdSucursal GROUP BY  S.IdSucursal, S.Nombre HAVING SUM(T.Total) > 0
 GO
 
 CREATE OR ALTER VIEW VistaCategorias
@@ -1097,9 +1097,10 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE SP_Tickets (@IdEmpleado int)
-as
-begin
-	
+AS
+BEGIN
+	BEGIN TRANSACTION
+	BEGIN TRY
 	declare @CantidadTotal int, @Total money, @Id int, @Sucursal int,@IdCliente int;
 
 	SET @Sucursal = (SELECT Sucursal FROM Empleados WHERE IdEmpleado = @IdEmpleado);
@@ -1109,7 +1110,12 @@ begin
 	set @CantidadTotal = (select SUM(Cantidad) from Ventas where Ticket = @Id);
 	set @Total = (select SUM(Monto) from Ventas where Ticket = @Id)
 	insert into Tickets values (@CantidadTotal,@Total,GETDATE(),@IdCliente,@Sucursal,@IdEmpleado,@Id)
-end;
+	COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+	ROLLBACK TRANSACTION
+	END CATCH
+END;
 go
 
 
@@ -1701,23 +1707,3 @@ EXEC SP_InsertProductos 'Kingston KC2500 1TB NVMe M.2 SSD', 5, 3000, 3600, 50, 4
 EXEC SP_InsertProductos 'Kingston DataTraveler 100 G3 128GB USB', 5, 400, 480, 100, 4
 EXEC SP_InsertProductos 'Razer BlackWidow Keyboard', 6, 3000, 3600, 40, 5
 EXEC SP_InsertProductos 'Razer DeathAdder V2 Mouse', 6, 1500,1800, 60,5
-
-select * From RegistroProductos
-select * From RegistroEmpleados
-select * From Empleados
-
-select * From Guanajuato$ where d_asenta = 'San Javier'
-
-select * From Guanajuato$ where d_codigo = 36813
-
-select * from CodigosPostales where CodigoPostal = 38800
-
-select * From Guanajuato$  
-
-select P.IdPais as Pais, E.IdEstado as Estado, M.IdMunicipio as Municipio, C.IdColonia as Colonia, CP.IdCodigoPostal as CP from Paises as P inner join Estados as E on P.IdPais = E.IdPais
-inner join Municipios as M on E.IdEstado = M.IdEstado
-inner join CodigosPostales as CP on M.IdMunicipio = CP.IdMunicipio
-inner join Colonias as C on CP.IdCodigoPostal = C.IdCodigoPostal
-where CP.CodigoPostal = 36433;
-
-EXEC SP_Columnas 'Productos'

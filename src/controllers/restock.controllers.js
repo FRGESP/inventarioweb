@@ -78,8 +78,8 @@ function buildPDF(dataCallback, endCallback,empleado,productos,proveedor) {
 
       doc.moveDown(2);
 
-    doc.fontSize(13).text(`A quien corresponda, se le pide de la manera más atenta que haga saber al proveedor ${proveedor.Proveedor} con el teléfono ${proveedor.Telefono} y la dirección
-    ${proveedor.Direccion} que de favor reabastezca nuestros almacenes los productos siguientes para que cada uno alcance un stock mínimo de: ${empleado.Cantidad} unidades`,{
+    doc.fontSize(13).text(`A quien corresponda, se le pide de la manera más atenta que haga saber al proveedor ${proveedor.Proveedor} con teléfono ${proveedor.Telefono} y la dirección
+    ${proveedor.Direccion} que de favor reabastezca nuestros almacenes con los siguientes productos para que cada uno alcance un stock mínimo de: ${empleado.Cantidad} unidades`,{
         align : 'justify'
     });
 

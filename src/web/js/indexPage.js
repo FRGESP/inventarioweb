@@ -21,7 +21,7 @@ async function ingresar() {
         if(respuesta == "Correct") {
             crearAlerta("success","Contraseña Correcta")
             //setEmpleadoID()
-            window.location.href = '/'+'inicio'
+            window.location.href = '/'+'restock'
         }
         if(respuesta == "Incorrect") {
             crearAlerta("danger","Contraseña Incorrecta")
