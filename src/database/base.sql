@@ -360,7 +360,7 @@ GO
 
 CREATE OR ALTER VIEW VistaSucursalesVentas
 AS
-SELECT S.IdSucursal, S.Nombre, SUM(T.Total) AS Total, COUNT(T.Sucursal) AS NUM FROM Sucursales AS S LEFT JOIN Tickets AS T ON T.Sucursal = S.IdSucursal GROUP BY  S.IdSucursal, S.Nombre HAVING SUM(T.Total) > 0
+SELECT S.IdSucursal, S.Nombre, SUM(T.Total) AS Total, COUNT(T.Sucursal) AS NUM FROM Sucursales AS S LEFT JOIN Tickets AS T ON T.Sucursal = S.IdSucursal GROUP BY  S.IdSucursal, S.Nombre
 GO
 
 CREATE OR ALTER VIEW VistaCategorias
@@ -696,7 +696,7 @@ GO
 CREATE OR ALTER PROCEDURE SP_SucursalesVista
 AS
 BEGIN
- SELECT * FROM VistaSucursales
+ SELECT VS.IdSucursal, VS.Nombre, VS.IdDireccion, VS.AvgSueldo, VS.SueldoMax ,VS.CantidadEmpleados, VSV.Total, VSV.NUM FROM VistaSucursales AS VS INNER JOIN VistaSucursalesVentas AS VSV ON VS.IdSucursal = VSV.IdSucursal
 END
 GO
 
@@ -726,6 +726,14 @@ AS
 BEGIN
 UPDATE Sucursales SET Nombre=@Nombre, IdDireccion = @Direccion where IdSucursal=@Id;
 SELECT IDENT_CURRENT('Sucursales') as Id;
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ImprimirSucursalInfo(@Id int)
+AS
+BEGIN
+	SELECT * FROM VistaSucursales WHERE IdSucursal = @Id
+	SELECT * FROM Perfil
 END
 GO
 
