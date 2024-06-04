@@ -415,37 +415,37 @@ GO
 
 CREATE OR ALTER VIEW VistaRegistroProductos
 AS
-	SELECT IdRegistro, IdProducto AS Elemento, Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroProductos
+	SELECT IdRegistro, IdProducto AS Elemento, FORMAT(Fecha,'dd-MM-yyyy') AS Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroProductos
 GO
 
 CREATE OR ALTER VIEW VistaRegistroCategorias
 AS
-	SELECT IdRegistro, IdCategoria AS Elemento, Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroCategorias
+	SELECT IdRegistro, IdCategoria AS Elemento, FORMAT(Fecha,'dd-MM-yyyy') AS Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroCategorias
 GO
 
 CREATE OR ALTER VIEW VistaRegistroProveedores
 AS
-	SELECT IdRegistro, IdProveedor AS Elemento, Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroProveedores
+	SELECT IdRegistro, IdProveedor AS Elemento, FORMAT(Fecha,'dd-MM-yyyy') AS Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroProveedores
 GO
 
 CREATE OR ALTER VIEW VistaRegistroClientes
 AS
-	SELECT IdRegistro, IdCliente AS Elemento, Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroClientes
+	SELECT IdRegistro, IdCliente AS Elemento, FORMAT(Fecha,'dd-MM-yyyy') AS Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroClientes
 GO
 
 CREATE OR ALTER VIEW VistaRegistroSucursales
 AS
-	SELECT IdRegistro, IdSucursal AS Elemento, Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroSucursales
+	SELECT IdRegistro, IdSucursal AS Elemento, FORMAT(Fecha,'dd-MM-yyyy') AS Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroSucursales
 GO
 
 CREATE OR ALTER VIEW VistaRegistroPersonas
 AS
-	SELECT IdRegistro, IdPersona AS Elemento, Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroPersonas
+	SELECT IdRegistro, IdPersona AS Elemento, FORMAT(Fecha,'dd-MM-yyyy') AS Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroPersonas
 GO
 
 CREATE OR ALTER VIEW VistaRegistroEmpleados
 AS
-	SELECT IdRegistro, IdEmpleado AS Elemento, Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroEmpleados
+	SELECT IdRegistro, IdEmpleado AS Elemento, FORMAT(Fecha,'dd-MM-yyyy') AS Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroEmpleados
 GO
 
 CREATE OR ALTER VIEW VistaEditarStock
@@ -1183,7 +1183,20 @@ GO
 CREATE OR ALTER PROCEDURE SP_ProductosTicketVista(@Id int)
 AS
 BEGIN
-	SELECT VT.IdVenta, VT.Producto, VT.Cantidad, VT.Precio, VT.Monto, V.Ticket FROM vistaTicket AS VT INNER JOIN Ventas as V ON V.IdVenta = VT.IdVenta where Ticket = @Id;
+	DECLARE @NumTicket int;
+	SET @NumTicket = (SELECT NumTicket FROM Tickets WHERE Ticket = @Id);
+	SELECT VT.IdVenta, VT.Producto, VT.Cantidad, VT.Precio, VT.Monto, V.Ticket FROM vistaTicket AS VT INNER JOIN Ventas as V ON V.IdVenta = VT.IdVenta where Ticket = @NumTicket;
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ReImprimirTicket(@NumTicket INT)
+AS
+BEGIN
+	DECLARE @Id int;
+	set @Id = (SELECT NumTicket FROM Tickets where Ticket = @NumTicket);
+	SELECT P.IdProducto, P.Nombre, V.Cantidad, V.Precio, V.Monto FROM VENTAS AS v INNER JOIN Productos as P ON P.IdProducto = V.IdProducto WHERE V.Ticket = @Id
+	SELECT C.IdCliente, P.Nombre, T.Total, T.Fecha, T.NumTicket AS Ticket FROM Personas AS P INNER JOIN Clientes AS C ON C.IdPersona = P.IdPersona INNER JOIN Tickets AS T ON T.IdCliente = C.IdCliente WHERE T.NumTicket = @Id
+	SELECT E.IdEmpleado, P.Nombre AS NombreEmpleado, S.Nombre as Sucursal, dbo.ObtenerDireccion(S.IdDireccion) AS Direccion FROM Empleados AS E INNER JOIN Personas AS  P ON E.IdPersona = P.IdPersona INNER JOIN Tickets AS T ON T.Empleado = E.IdEmpleado INNER JOIN Sucursales AS S ON S.IdSucursal = T.Sucursal WHERE T.NumTicket = @Id
 END
 GO
 
