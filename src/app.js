@@ -13,6 +13,7 @@ import proveedoresRutas from './routes/proveedores.routes.js'
 import clientesRutas from './routes/clientes.routes.js'
 import ventasRutas from './routes/ventas.routes.js'
 import registrosRutas from './routes/registros.routes.js'
+import TicketsRutas from './routes/tickets.routes.js'
 import restockRutas from './routes/restock.routes.js'
 import session from 'express-session';
 import path from 'path';
@@ -51,6 +52,7 @@ app.use(clientesRutas);
 app.use(ventasRutas);
 app.use(registrosRutas);
 app.use(restockRutas);
+app.use(TicketsRutas);
 
 app.use(express.static(path.join(__dirname, 'src', 'web')));
 

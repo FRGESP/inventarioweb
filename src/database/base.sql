@@ -408,6 +408,11 @@ as
 	select v.IdVenta ,p.Nombre as Producto, v.Cantidad, v.Precio,v.Monto  from Ventas as v INNER JOIN Productos as p ON v.IdProducto = p.IdProducto
 go
 
+CREATE OR ALTER VIEW VistaTicketTabla
+AS
+	SELECT T.Ticket, T.Cantidad, T.Total, FORMAT(T.Fecha,'dd-MM-yyyy') AS Fecha, P.Nombre AS Cliente, S.Nombre AS Sucursal, T.Empleado, T.NumTicket FROM Tickets AS T INNER JOIN Clientes AS C ON T.IdCliente = C.IdCliente INNER JOIN Personas AS P ON C.IdPersona = P.IdPersona INNER JOIN Sucursales AS S ON S.IdSucursal = T.Sucursal
+GO
+
 CREATE OR ALTER VIEW VistaRegistroProductos
 AS
 	SELECT IdRegistro, IdProducto AS Elemento, Fecha, Accion, Campo, ValorAnterior, ValorActual, Empleado FROM RegistroProductos
@@ -812,7 +817,7 @@ BEGIN
 	SELECT * FROM VistaProveedores WHERE IdProveedor = @Id
 END
 GO
----------------------------------------------------------------------------asccccccccccccccccccccccccvavavav
+
 CREATE OR ALTER PROCEDURE SP_ProveedoresVistaPorIDConDireccion(@Id int)
 AS
 BEGIN
@@ -1166,6 +1171,22 @@ BEGIN
 	DELETE FROM TempVentas WHERE IdEmpleado = @IdEmpleado
 END
 GO
+
+-- Tickets
+CREATE OR ALTER PROCEDURE SP_TicketsVista
+AS
+BEGIN
+	SELECT * FROM VistaTicketTabla
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ProductosTicketVista(@Id int)
+AS
+BEGIN
+	SELECT VT.IdVenta, VT.Producto, VT.Cantidad, VT.Precio, VT.Monto, V.Ticket FROM vistaTicket AS VT INNER JOIN Ventas as V ON V.IdVenta = VT.IdVenta where Ticket = @Id;
+END
+GO
+
 -- RegistroProductos
 CREATE OR ALTER PROCEDURE SP_RegistroProductosVista
 AS
