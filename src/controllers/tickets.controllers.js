@@ -16,7 +16,10 @@ function buildPDF(dataCallback, endCallback,cliente,empleado,venta) {
         height: "52%"
     }, () => {
   
-  
+        // doc.image('src/web/img/logo.png', 320, 280, {scale: 0.25});
+
+        doc.image('src/web/img/logo.png', 500, 20, {fit: [50, 100], align: 'center'});
+
         doc.fontSize(30).text("Ticket De Compra",{
             align : 'center'
         });

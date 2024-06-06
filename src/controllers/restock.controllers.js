@@ -60,7 +60,8 @@ function buildPDF(dataCallback, endCallback,empleado,productos,proveedor) {
         height: "45%"
     }, () => {
   
-  
+        doc.image('src/web/img/logo.png', 500, 20, {fit: [50, 100], align: 'center'});
+
         doc.fontSize(30).text("Carta Restock",{
             align : 'center'
         });
