@@ -40,6 +40,10 @@ function llenarTabla(data) {
 
 // Funcion para llenar la tabla ventas con los datos obtenidos
 function llenarTablaVentas(data) {
+  if(data.length == 0)
+    {
+      crearAlerta("warning","Es posible que la lista de productos no se muestre completa ya que uno o más productos fueron eliminados")
+    }
   var source = document.getElementById("tablaVentas-template").innerHTML;
   var template = Handlebars.compile(source);
   var html = template({ elementos: data });
@@ -52,7 +56,6 @@ async function obtenerDatosTablaPorId(IdElemento) {
   console.log(ruta);
   const res = await fetch(ruta);
   if (res.ok) {
-    console.log("SIUUU");
     const resJson = await res.json();
     console.log(resJson);
     habilitarElementos();

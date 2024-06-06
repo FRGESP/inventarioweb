@@ -50,7 +50,7 @@ async function subirProducto() {
     IdProducto.value = "";
     cantidad.value = 1;
   } else {
-    crearAlerta("danger","Hubo un error al subir el producto");
+    crearAlerta("danger","Hubo un error al subir el producto. No hay suficiente stock");
   }
 }
 
