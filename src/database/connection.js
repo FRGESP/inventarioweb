@@ -1,11 +1,9 @@
 import sql from 'mssql'
 
 const dbsettings = {
-    //user : "frgesp",
-    user : "sa",
+    user : "frgesp",
     password : "Password!",
-    //server : "frgespserver.database.windows.net",
-    server: "localhost",
+    server : "frgespserver.database.windows.net",
     database : "Inventario",
     options : {
         encrypt : true,
