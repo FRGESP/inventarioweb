@@ -73,7 +73,7 @@ async function subirTicket() {
     crearAlerta("success","Venta realizada")
     obtenerDatosTabla();
   } else {
-    crearAlerta("danger","No se pudo realizar la venta. verifique los datos");
+    crearAlerta("danger","No se pudo realizar la venta. Verifique los datos");
   }
 }
 
@@ -132,17 +132,23 @@ async function obtenerClienteAct() {
 async function obtenerDatosTabla() {
   const botonBuscar = document.getElementById("botonCliente");
   const res = await fetch(API + "obtenerTicketVista/");
-
+  const botonCheck = document.getElementById("checkTicket");
+  
   if (res.ok) {
     const resJson = await res.json();
     console.log(resJson);
+    if(resJson.length == 0)
+    {
+        botonCheck.setAttribute("disabled","");
+    } else {
+      botonCheck.removeAttribute("disabled");
+    }
     llenarTabla(resJson);
     const cliente =  await obtenerClienteAct();
     console.log(cliente)
     if(cliente != 0 && botonBuscar.style.display != 'none') {
       document.getElementById("inputCliente").value = cliente;
       document.getElementById("botonCliente").click();
-      console.log("PASSSA")
     }
     obtenerTotal();
   } else {

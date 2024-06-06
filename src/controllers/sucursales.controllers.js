@@ -50,3 +50,26 @@ export const addSucursal = async (req, res) => {
     
 };
 
+
+
+export const deleteSucursal = async (req,res) => {
+    try {
+        const pool = await getConnection();
+        const id = req.params.id;
+
+        const result = await pool.request().query(`EXEC SP_DeleteSucursal ${id}`)
+        
+        //console.log(result);
+
+        if (result.rowsAffected[0] == 0)
+        {
+            return res.status(404).json({message: "Element not found"})
+        }
+        return res.json({message : "Element deleted"});  
+        } catch(error)
+        {
+            console.error("Error:", error.message);
+            return res.status(300).json({message: "Element not found"});
+        }
+}
+

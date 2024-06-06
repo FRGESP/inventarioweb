@@ -175,6 +175,8 @@ async function eliminarElementos() {
     valorInputBarra.value = "";
   } else if (res.status == 400){
     crearAlerta("warning","No se puede eliminar a si mismo");
+  } else if (res.status == 300){
+    crearAlerta("danger","No se puede porque el empleado tiene registros asociados");
   }
     else{
     crearAlerta("danger","No se ha podido eliminar el elemento");

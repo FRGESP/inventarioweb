@@ -705,17 +705,17 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE SP_DireccionesVistaPorID(@Id int)
+CREATE OR ALTER PROCEDURE SP_SucursalesVistaPorID(@Id int)
 AS
 BEGIN
-	SELECT * FROM VistaSucursales WHERE IdSucursal = @Id
+	 SELECT VS.IdSucursal, VS.Nombre, VS.IdDireccion, VS.AvgSueldo, VS.SueldoMax ,VS.CantidadEmpleados, VSV.Total, VSV.NUM FROM VistaSucursales AS VS INNER JOIN VistaSucursalesVentas AS VSV ON VS.IdSucursal = VSV.IdSucursal WHERE VS.IdSucursal = @Id
 END
 GO
 
-CREATE OR ALTER PROCEDURE SP_DireccionesVistaPorNombre(@Nombre varchar(50))
+CREATE OR ALTER PROCEDURE SP_SucursalesVistaPorNombre(@Nombre varchar(50))
 AS
 BEGIN
-	SELECT * FROM VistaSucursales WHERE Nombre Like '%'+@Nombre+'%'
+	 SELECT VS.IdSucursal, VS.Nombre, VS.IdDireccion, VS.AvgSueldo, VS.SueldoMax ,VS.CantidadEmpleados, VSV.Total, VSV.NUM FROM VistaSucursales AS VS INNER JOIN VistaSucursalesVentas AS VSV ON VS.IdSucursal = VSV.IdSucursal WHERE VS.Nombre Like '%'+@Nombre+'%'
 END
 GO
 
@@ -1063,7 +1063,7 @@ GO
 CREATE OR ALTER PROCEDURE SP_ObtenerPersonas
 AS
 BEGIN
-SELECT IdPersona AS Id, CONCAT('ID: ',IdPersona, ' Nombre: ',Nombre) AS Elemento FROM Personas
+SELECT P.IdPersona AS Id, CONCAT('ID: ',P.IdPersona, ' Nombre: ',P.Nombre) AS Elemento, E.IdEmpleado FROM Personas AS P LEFT JOIN Empleados AS E ON E.IdPersona = P.IdPersona WHERE E.IdEmpleado IS NULL
 END
 GO
 

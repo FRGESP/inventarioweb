@@ -6,8 +6,8 @@ const tituloBodySup = document.getElementById("TituloBody").textContent = "Sucur
 
 //Funciones
 const stockGetAllData = "SP_SucursalesVista"
-let stockGetByID = "SP_DireccionesVistaPorID"
-const stockGetByName = "SP_DireccionesVistaPorNombre"
+let stockGetByID = "SP_SucursalesVistaPorID"
+const stockGetByName = "SP_SucursalesVistaPorNombre"
 const stockDeleteElement = "SP_DeleteSucursal"
 const tablaColumnasEditar = "Sucursales";
 const rutaEditar = "editarSucursal"
@@ -102,7 +102,7 @@ async function obtenerDatosTabla() {
 //Funcion para borrar los elementos de la tabla
 async function eliminarElementos() {
   const setID = await setEmpleadoID()
-  const res = await fetch(`${API}deleteTablas/${stockDeleteElement}/${valorInputBarra.value}`, {
+  const res = await fetch(`${API}deleteSucursal/${valorInputBarra.value}`, {
     method : "DELETE",
     headers: {
       "Content-Type": "application/json"
@@ -113,6 +113,8 @@ async function eliminarElementos() {
     crearAlerta("success","Elemento Eliminado");
     obtenerDatosTabla();
     valorInputBarra.value = "";
+  } else if (res.status == 300){
+    crearAlerta("danger","No se puede eliminar porque la sucursal registros asociados.");
   } else {
     crearAlerta("danger","No se ha podido eliminar el elemento");
   }

@@ -7,7 +7,6 @@ const tituloBodySup = document.getElementById("TituloBody").textContent = "Direc
 //Funciones
 const stockGetAllData = "SP_MostrarDirecciones"
 let stockGetByID = "SP_MostrarDireccion"
-const stockGetByName = "SP_PersonasVistaPorNombre"
 const stockDeleteElement = "SP_DeleteDireccion"
 const tablaColumnasEditar = "VistaDirecciones";
 const rutaEditar = "editarDirecciones"
@@ -243,19 +242,6 @@ async function obtenerDatosTablaPorId(IdElemento) {
   } else {
     crearAlerta("danger","No se ha encontrado nada con ese ID");
     return 0;
-  }
-}
-
-//Funcion para obtener datos por Nombre
-async function obtenerDatosTablaPorNombre() {
-  const res = await fetch(`${API}vistaTablas/${stockGetByName}/${valorInputBarra.value}`);
-  if (res.ok) {
-    console.log("SIUUU");
-    const resJson = await res.json();
-    console.log(resJson);
-    llenarTabla(resJson);
-  } else {
-    crearAlerta("danger","No se ha encontrado nada con ese nombre");
   }
 }
 

@@ -70,9 +70,9 @@ export const deleteEmpleados = async (req,res) => {
         }
         const result = await pool.request().query(`EXEC SP_DeleteEmpleado ${id}`)
         
-        console.log(result);
+        //console.log(result);
 
-        if (result.rowsAffected[0] === 0)
+        if (result.rowsAffected[0] == 0)
         {
             return res.status(404).json({message: "Element not found"})
         }
@@ -80,6 +80,7 @@ export const deleteEmpleados = async (req,res) => {
         } catch(error)
         {
             console.error("Error:", error.message);
+            return res.status(300).json({message: "Element not found"});
         }
 }
 

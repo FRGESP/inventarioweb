@@ -97,7 +97,7 @@ async function obtenerDatosTablaPorId(IdElemento) {
 async function obtenerDatosTablaPorNombre() {
   const res = await fetch(`${API}vistaTablas/${stockGetByName}/${valorInputBarra.value}`);
   if (res.ok) {
-    console.log("SIUUU");
+    document.getElementById("selectProveedor").value = "seleccion";
     const resJson = await res.json();
     console.log(resJson);
     llenarTabla(resJson);
