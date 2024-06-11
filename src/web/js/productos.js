@@ -54,6 +54,9 @@ async function crearFormularioEditar() {
             document.getElementById(elemento).textContent = "Proveedor:"
             document.getElementById(elemento).appendChild(selectProveedor);
             obtenerOpciones("SP_ObtenerProveedores",selectProveedor,valores[0].Proveedor);
+            $(`#inIdProveedor, #inIdCategoria`).select2({
+              dropdownParent: $("#modalCrearProducto")
+            });
         } else {
           crearInput(elemento,valores[0][`${elemento}`]);
         }
@@ -95,6 +98,9 @@ async function crearFormularioCrear() {
             document.getElementById(elemento).textContent = "Proveedor:"
             document.getElementById(elemento).appendChild(selectProveedor);
             obtenerOpciones("SP_ObtenerProveedores",selectProveedor,"");
+            $(`#inIdProveedor, #inIdCategoria`).select2({
+              dropdownParent: $("#modalCrearProducto")
+            });
         } else {
           crearInput(elemento,"");
         }

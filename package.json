@@ -20,7 +20,8 @@
     "morgan": "^1.10.0",
     "mssql": "^10.0.2",
     "pdfkit": "^0.15.0",
-    "pdfkit-construct": "^1.2.3"
+    "pdfkit-construct": "^1.2.3",
+    "select2": "^4.1.0-rc.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"

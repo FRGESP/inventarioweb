@@ -66,6 +66,9 @@ async function crearFormularioEditar() {
           console.log("El id es: "+ `in${elemento}`);
           document.getElementById(elemento).appendChild(selectSucursal);
           obtenerOpciones("SP_ObtenerSucursales",selectSucursal,valores[0].Sucursal);
+          $(`#inSucursal`).select2({
+            dropdownParent: $("#modalCrearProducto")
+          });
         } 
         
         else{
@@ -135,6 +138,9 @@ async function crearFormularioCrear() {
           console.log("El id es: "+ `in${elemento}`);
           document.getElementById(elemento).appendChild(selectSucursal);
           obtenerOpciones("SP_ObtenerSucursales",selectSucursal,"");
+          $(`#inSucursal, #inIdPersona`).select2({
+            dropdownParent: $("#modalCrearProducto")
+          });
         }  else {
           crearInput(elemento,"");
         }

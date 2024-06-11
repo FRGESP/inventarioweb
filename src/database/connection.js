@@ -2,8 +2,10 @@ import sql from 'mssql'
 
 const dbsettings = {
     user : "frgesp",
+    //user : "sa",
     password : "Password!",
     server : "frgespserver.database.windows.net",
+    //server: "localhost",
     database : "Inventario",
     options : {
         encrypt : true,

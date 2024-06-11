@@ -44,6 +44,9 @@ async function crearFormularioEditar() {
           console.log("El id es: "+ `in${elemento}`);
           document.getElementById(elemento).appendChild(selectDireccion);
           obtenerOpciones("SP_ObtenerDirecciones",selectDireccion,valores[0].IdDireccion);
+          $(`#inIdDireccion`).select2({
+            dropdownParent: $("#modalCrearProducto")
+          });
         } else {
           crearInput(elemento,valores[0][`${elemento}`]);
         }
@@ -75,6 +78,9 @@ async function crearFormularioCrear() {
           console.log("El id es: "+ `in${elemento}`);
           document.getElementById(elemento).appendChild(selectDireccion);
           obtenerOpciones("SP_ObtenerDirecciones",selectDireccion,"");
+          $(`#inIdDireccion`).select2({
+            dropdownParent: $("#modalCrearProducto")
+          });
         } else {
           crearInput(elemento,"");
         }

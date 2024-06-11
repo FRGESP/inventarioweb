@@ -46,6 +46,9 @@ async function crearFormularioEditar() {
           document.getElementById(elemento).appendChild(selectDireccion);
           console.log("La direccion es"+valores[0].Direccion);
           obtenerOpciones("SP_ObtenerDirecciones",selectDireccion,valores[0].Direccion);
+          $(`#inDireccion`).select2({
+            dropdownParent: $("#modalCrearProducto")
+          });
         } else if(elemento == "Estatus") {
           const selectEstatus = crearElementoHTML("select");
           selectEstatus.classList.add("form-select","form-control-sm");
@@ -94,6 +97,9 @@ async function crearFormularioCrear() {
           console.log("El id es: "+ `in${elemento}`);
           document.getElementById(elemento).appendChild(selectDireccion);
           obtenerOpciones("SP_ObtenerDirecciones",selectDireccion,"");
+          $(`#inDireccion`).select2({
+            dropdownParent: $("#modalCrearProducto")
+          });
         } else if(elemento == "Estatus") {
           const selectEstatus = crearElementoHTML("select");
           selectEstatus.classList.add("form-select","form-control-sm");
