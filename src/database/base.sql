@@ -267,6 +267,76 @@ CONSTRAINT FK_TicketsToSucursales FOREIGN KEY(Sucursal) REFERENCES Sucursales(Id
 CONSTRAINT FK_TicketsToEmpleados FOREIGN KEY(Empleado) REFERENCES Empleados(IdEmpleado) ON DELETE NO ACTION
 );
 
+CREATE TABLE Conversaciones (
+IdConversacion INT NOT NULL IDENTITY,
+Empleado1 INT NOT NULL,
+Empleado2 INT NOT NULL,
+CONSTRAINT PK_Conversaciones PRIMARY KEY(IdConversacion),
+CONSTRAINT FK_ConversacionesE1ToEmpleados FOREIGN KEY(Empleado1) REFERENCES Empleados(IdEmpleado),
+CONSTRAINT FK_ConversacionesE2ToEmpleados FOREIGN KEY(Empleado2) REFERENCES Empleados(IdEmpleado)
+);
+
+CREATE TABLE Mensajes (
+IdMensaje INT NOT NULL IDENTITY,
+Mensaje VARCHAR(MAX) NOT NULL,
+IdConversacion INT NOT NULL,
+Remitente INT NOT NULL,
+Fecha DATETIME NOT NULL,
+CONSTRAINT PK_Mensajes PRIMARY KEY(IdMensaje),
+CONSTRAINT FK_MensajesToConversaciones FOREIGN KEY(IdConversacion) REFERENCES Conversaciones(IdConversacion),
+CONSTRAINT FK_MensajesToEmpleados FOREIGN KEY(Remitente) REFERENCES Empleados(IdEmpleado)
+);
+GO
+
+CREATE OR ALTER PROCEDURE SP_Conversaciones(@Remitente INT, @Destinatario INT)
+AS
+BEGIN
+	DECLARE @IdConversacion INT
+	SET @IdConversacion = (SELECT IdConversacion FROM Conversaciones WHERE (Empleado1 = @Remitente AND Empleado2 = @Destinatario) OR (Empleado2 = @Remitente AND Empleado1 = @Destinatario))
+
+	IF(@IdConversacion IS NOT NULL)
+	BEGIN
+		SELECT @Remitente AS Usuario,IdMensaje, Mensaje, IdConversacion, Remitente, FORMAT(Fecha, 'yyyy-MM-dd HH:mm:ss') AS Fecha FROM Mensajes WHERE IdConversacion = @IdConversacion ORDER BY Fecha ASC;
+	END
+	ELSE
+	BEGIN
+		INSERT INTO Conversaciones VALUES (@Remitente, @Destinatario);
+	END
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ConversacionesIntervalo(@Remitente INT, @Destinatario INT)
+AS
+BEGIN
+	DECLARE @IdConversacion INT
+	SET @IdConversacion = (SELECT IdConversacion FROM Conversaciones WHERE (Empleado1 = @Remitente AND Empleado2 = @Destinatario) OR (Empleado2 = @Remitente AND Empleado1 = @Destinatario))
+
+	SELECT @Remitente AS Usuario,IdMensaje, Mensaje, IdConversacion, Remitente, FORMAT(Fecha, 'yyyy-MM-dd HH:mm:ss') AS Fecha FROM Mensajes WHERE IdConversacion = @IdConversacion ORDER BY Fecha ASC;
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_Mensajes(@Remitente INT, @Destinatario INT, @Mensaje VARCHAR(MAX))
+AS
+BEGIN
+	DECLARE @IdConversacion INT
+	SET @IdConversacion = (SELECT IdConversacion FROM Conversaciones WHERE (Empleado1 = @Remitente AND Empleado2 = @Destinatario) OR (Empleado2 = @Remitente AND Empleado1 = @Destinatario))
+	
+	INSERT INTO Mensajes VALUES(@Mensaje,@IdConversacion,@Remitente,SYSDATETIME());
+	SELECT IDENT_CURRENT('Mensajes') 
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ObtenerUsuariosMensajes
+AS
+BEGIN
+	SELECT E.IdEmpleado AS Id, P.Nombre AS Elemento FROM Empleados AS E INNER JOIN Personas AS P ON E.IdPersona = P.IdPersona
+END
+GO
+
+EXEC SP_ConversacionesIntervalo 2,1
+SELECT * FROM Conversaciones
+
+EXEC SP_Mensajes 2,1, 'Que bueno'
 
 ---------------------------------------CCODIGOS POSTALES-----------------------
 insert into Paises values('Mexico');

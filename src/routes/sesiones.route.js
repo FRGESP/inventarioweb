@@ -1,9 +1,17 @@
 import { Router } from "express";
-import { auth, deleteTablas, logout, perfil, setEmpleadoID, vistaTablas, vistaTablasElemento} from "../controllers/sesiones.controllers.js";
+import { auth, deleteTablas, enviarMensaje, logout, obtenerMensajes, obtenerMensajesInterval, obtenerUsuarios, perfil, setEmpleadoID, vistaTablas, vistaTablasElemento} from "../controllers/sesiones.controllers.js";
 
 const router = Router();
 
 router.get("/auth",auth);
+
+router.get("/usuarios",obtenerUsuarios);
+
+router.get("/mensajes/:dest",obtenerMensajes);
+
+router.get("/mensajesInterval/:dest",obtenerMensajesInterval);
+
+router.post("/enviarMensaje/:dest",enviarMensaje);
 
 router.get("/datos",perfil);
 

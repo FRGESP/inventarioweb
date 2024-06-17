@@ -1,3 +1,8 @@
+<!-- select2 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js" integrity="sha512-2ImtlRlf2VVmiGZsjm9bEyhjGW4dU7B6TNwh/hx/iSByxNENtj3WVE6o/9Lj4TJeVXPi4bnOIMXFIJJAeufa0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" integrity="sha512-nMNlpuaDPrqlEls3IX/Q56H36qvBASwb3ipuo3MxeWbsQB1881ox0cRv7UPTgBlriqoynt35KjEwgGUeUXIPnw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+
 <nav class="navbar bg-dark navbar-expand-lg bg-body-tertiary"data-bs-theme="dark">
     <div class="container-fluid">
       <a class="navbar-brand" href="/restock">Entradas</a>
@@ -50,6 +55,14 @@
           </li>
         </ul>
         <ul class="navbar-nav ms-auto" style="padding-right: 1%;">
+          <li>
+            <div>
+              <button type="button" class="btn" data-bs-target="#modalMensajes" data-bs-toggle="modal"
+              data-bs-target="#staticBackdrop" onclick="mensajes()">
+                <i class="fa-solid fa-message"></i>
+              </button>
+            </div>
+          </li>
           <li class="nav-item"> 
             <!-- <a class="nav-link active" href="/perfil" id="usuario"></a> -->
             <li class="nav-item dropdown" >
@@ -75,3 +88,124 @@
       </div>
     </div>
   </nav>
+
+  <!-- Modal -->
+ <div
+ class="modal"
+ id="modalMensajes"
+ data-bs-backdrop="static"
+ data-bs-keyboard="false"
+ tabindex="-1"
+ aria-labelledby="staticBackdropLabel"
+ aria-hidden="true"
+>
+ <div class="modal-dialog modal-dialog-centeredv modal-l">
+   <div class="modal-content">
+     <div class="modal-header" id="modalMensajes-Header">
+      <div class="container">
+        <div class="row justify-content-center text-center">
+          <div class="col-md-10">
+            <select class="form-select" id="selectUsuarioMsj">
+              <option value="0" selected>Seleccione un usuario</option>
+            </select>
+          </div>
+          <button
+         type="button"
+         class="btn-close"
+         data-bs-dismiss="modal"
+         aria-label="Close"
+       ></button>
+        </div>
+      </div>
+
+     </div>
+     <div class="modal-body" id="divModalMensajes" style="display: '';">
+
+      <div class="container tbl-container">
+        <div class="row justify-content-center tbl-fixed">
+          <div class="col-md-11">
+            <table class="divMensajes">
+              <thead>
+                <th scope="col" ></th>
+                  <th scope="col"></th>
+              </thead>
+              <tbody id="tablaMensajes"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group mb-3">
+        <textarea class="form-control" id="textareaMsj" rows="1"></textarea>
+        <button class="btn btn-success" type="button" id="button-addon2" onclick="enviarMensaje()">Enviar</button>
+      </div>
+     </div>
+     <div class="modal-footer">
+       <button
+         type="button"
+         class="btn btn-secondary"
+         data-bs-dismiss="modal"
+       >
+         Cancelar
+       </button>
+       <button
+         type="button"
+         class="btn btn-primary"
+         data-bs-dismiss="modal"
+         id="enviarForm"
+       >
+         Enviar
+       </button>
+     </div>
+   </div>
+ </div>
+</div>
+
+<style>
+  .tbl-container {
+    max-height: fit-content;
+    padding: 0;
+    border-radius: 10px;
+  }
+  .tbl-fixed {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 55vh;
+    max-height: 55vh;
+    margin-top: 20px;
+  }
+  .divMensajes {
+    border-collapse: separate;
+    width: 100%;
+  }
+  .margen {
+    margin-top: 20px;
+  }
+  .th {
+    position: sticky;
+    top: 0px;
+    background: white;
+  }
+  .indicardor {
+    margin-top: 10px;
+  }
+  #total {
+    background-color: greenyellow;
+    padding-left: 15px;
+    padding-right: 15px;
+    border-radius: 10px; /* Esto establece los bordes redondeados */
+  }
+
+  .remitente {
+    background-color: rgb(89, 207, 250);
+    padding: 10px;
+    border-radius: 10px; /* Esto establece los bordes redondeados */
+  }
+
+  .destinatario {
+    background-color: rgb(212, 209, 209);
+    padding: 10px;
+    border-radius: 10px; /* Esto establece los bordes redondeados */
+  }
+</style>
+

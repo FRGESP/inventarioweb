@@ -4,7 +4,7 @@ const dbsettings = {
     user : "frgesp",
     password : "Password!",
     server : "frgespserver.database.windows.net",
-    database : "Inventario",
+    database : "Inventario2",
     options : {
         encrypt : true,
         trustServerCertificate : true

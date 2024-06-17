@@ -114,3 +114,60 @@ export const setEmpleadoID = async (req,res) => {
      return res.status(404).json({message : error.message});
     }    
  } 
+
+ export const obtenerUsuarios = async (req,res) => {
+    try{
+        const pool = await getConnection();
+
+    const result = await pool.request()
+    .query('EXEC SP_ObtenerUsuariosMensajes')
+    return res.json(result.recordset)
+    } catch(error) {
+        return res.status(404).json({message : error.message});
+    }
+ }
+
+ export const obtenerMensajes = async (req,res) => {
+    try {
+        const pool = await getConnection();
+
+        const result = await pool.request()
+        .input("USER",sql.Int,req.session.user)
+        .input("Dest",sql.Int,req.params.dest)
+        .query("EXEC SP_Conversaciones @USER, @Dest")
+        return res.json(result.recordset)
+    }catch(error) {
+        console.error("Error:", error.message);
+        return res.status(404).json({message : error.message});
+    }
+ }
+
+ export const obtenerMensajesInterval = async (req,res) => {
+    try {
+        const pool = await getConnection();
+
+        const result = await pool.request()
+        .input("USER",sql.Int,req.session.user)
+        .input("Dest",sql.Int,req.params.dest)
+        .query("EXEC SP_ConversacionesIntervalo @USER, @Dest")
+        return res.json(result.recordset)
+    }catch(error) {
+        console.error("Error:", error.message);
+        return res.status(404).json({message : error.message});
+    }
+ }
+
+ export const enviarMensaje = async (req,res) => {
+    try{
+        const pool = await getConnection();
+
+        const result = await pool.request()
+        .input("USER",sql.Int,req.session.user)
+        .input("Dest",sql.Int,req.params.dest)
+        .input("Msj",sql.VarChar,req.body.Mensaje)
+        .query("EXEC SP_Mensajes @USER, @Dest, @Msj");
+        return res.json(result.recordset[0])
+    }catch(error) {
+        return res.status(404).json({message : error.message});
+    }
+ }
