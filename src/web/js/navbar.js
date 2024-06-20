@@ -71,17 +71,6 @@ async function obtenerOpciones(stock,select) {
   }
 }
 
-// async function obtenerConversacion(dest) {
-//   limpiarTablaMensajes();
-//   const res = await fetch(API + "mensajes/"+dest);
-//   if (res.ok) {
-//     const resJson = await res.json();
-//     mostrarMensajes(resJson);
-//   } else {
-//     console.log("No se puedieron obtener");
-//     crearAlerta("danger","No se puedieron obtener los datos ");
-//   }
-// }
 
 function limpiarTablaMensajes() {
   const tabla = document.getElementById("tablaMensajes");
@@ -162,6 +151,5 @@ function mostrarMensajes(resJson) {
         fila.appendChild(col2);
       }
       tablaMsj.appendChild(fila);
-      //console.log(.toLocaleDateString())
     })
 }
