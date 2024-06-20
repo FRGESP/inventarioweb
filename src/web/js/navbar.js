@@ -2,7 +2,6 @@ API = "http://localhost:3000/";
 
 let ban = false;
 let lengthMsj;
-let usuario = 0;
 
 async function cargar() {
   const res = await fetch(API + "datos");
@@ -44,11 +43,7 @@ async function mensajes() {
       const dest = document.getElementById("selectUsuarioMsj");
       if(dest.value == 0) {
         limpiarTablaMensajes()
-      } else {
-        obtenerConversacion(dest.value);
-        usuario = dest.value;
-      }
-      
+      } 
     })
   }
 }
@@ -76,35 +71,17 @@ async function obtenerOpciones(stock,select) {
   }
 }
 
-async function obtenerConversacion(dest) {
-  limpiarTablaMensajes();
-  const tablaMsj = document.getElementById("tablaMensajes");
-  const res = await fetch(API + "mensajes/"+dest);
-  if (res.ok) {
-    const resJson = await res.json();
-    console.log(resJson);
-    resJson.forEach(elemento => {
-      let fila = document.createElement("tr");
-      let col1 = document.createElement("td");
-      let col2 = document.createElement("td");
-      if(elemento.Usuario == elemento.Remitente) {
-        fila.appendChild(col1);
-        col2.textContent = elemento.Mensaje;
-        col2.classList.add("remitente");
-        fila.appendChild(col2);
-      } else{
-        col1.textContent = elemento.Mensaje;
-        col1.classList.add("destinatario");
-        fila.appendChild(col1);
-        fila.appendChild(col2);
-      }
-      tablaMsj.appendChild(fila);
-    })
-  } else {
-    console.log("No se puedieron obtener");
-    crearAlerta("danger","No se puedieron obtener los datos ");
-  }
-}
+// async function obtenerConversacion(dest) {
+//   limpiarTablaMensajes();
+//   const res = await fetch(API + "mensajes/"+dest);
+//   if (res.ok) {
+//     const resJson = await res.json();
+//     mostrarMensajes(resJson);
+//   } else {
+//     console.log("No se puedieron obtener");
+//     crearAlerta("danger","No se puedieron obtener los datos ");
+//   }
+// }
 
 function limpiarTablaMensajes() {
   const tabla = document.getElementById("tablaMensajes");
@@ -128,7 +105,6 @@ async function enviarMensaje() {
 });
   if(res.ok) {
     mensaje.value = "";
-    obtenerConversacion(dest);
   } else {
     console.log("No se pudo")
   }
@@ -137,7 +113,6 @@ async function enviarMensaje() {
 async function obtenerConversacionInterval() {
   const dest = document.getElementById("selectUsuarioMsj").value;
   if(dest != 0) {
-  const tablaMsj = document.getElementById("tablaMensajes");
   const res = await fetch(API + "mensajesInterval/"+dest);
   if (res.ok) {
     const resJson = await res.json();
@@ -145,23 +120,7 @@ async function obtenerConversacionInterval() {
       {
         lengthMsj = resJson.length;
         limpiarTablaMensajes();
-        resJson.forEach(elemento => {
-          let fila = document.createElement("tr");
-          let col1 = document.createElement("td");
-          let col2 = document.createElement("td");
-          if(elemento.Usuario == elemento.Remitente) {
-            fila.appendChild(col1);
-            col2.textContent = elemento.Mensaje;
-            col2.classList.add("remitente");
-            fila.appendChild(col2);
-          } else{
-            col1.textContent = elemento.Mensaje;
-            col1.classList.add("destinatario");
-            fila.appendChild(col1);
-            fila.appendChild(col2);
-          }
-          tablaMsj.appendChild(fila);
-        })
+        mostrarMensajes(resJson);
         const container = document.querySelector('.tbl-fixed');
         container.scrollTop = container.scrollHeight;
       }
@@ -169,4 +128,40 @@ async function obtenerConversacionInterval() {
     console.log("No se puedieron obtener");
   }
   }
+}
+
+function mostrarMensajes(resJson) {
+  let Fecha = new Date("01-01-1000")
+  const tablaMsj = document.getElementById("tablaMensajes");
+    resJson.forEach(elemento => {
+      let fila = document.createElement("tr");
+      let col1 = document.createElement("td");
+      let col2 = document.createElement("td");
+      
+      if(new Date(elemento.Fecha) > Fecha) {
+        Fecha = new Date(elemento.Fecha)
+        let filaFecha = document.createElement("tr");
+        let colFecha = document.createElement("td");
+        console.log(Fecha.toLocaleDateString())
+        colFecha.textContent = Fecha.toLocaleDateString();
+        colFecha.setAttribute("colspan","2");
+        colFecha.classList.add("text-center")
+        filaFecha.appendChild(colFecha);
+
+        tablaMsj.appendChild(filaFecha);
+      }
+      if(elemento.Usuario == elemento.Remitente) {
+        fila.appendChild(col1);
+        col2.textContent = elemento.Mensaje;
+        col2.classList.add("remitente");
+        fila.appendChild(col2);
+      } else{
+        col1.textContent = elemento.Mensaje;
+        col1.classList.add("destinatario");
+        fila.appendChild(col1);
+        fila.appendChild(col2);
+      }
+      tablaMsj.appendChild(fila);
+      //console.log(.toLocaleDateString())
+    })
 }

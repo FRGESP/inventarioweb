@@ -296,7 +296,7 @@ BEGIN
 
 	IF(@IdConversacion IS NOT NULL)
 	BEGIN
-		SELECT @Remitente AS Usuario,IdMensaje, Mensaje, IdConversacion, Remitente, FORMAT(Fecha, 'yyyy-MM-dd HH:mm:ss') AS Fecha FROM Mensajes WHERE IdConversacion = @IdConversacion ORDER BY Fecha ASC;
+		SELECT @Remitente AS Usuario,IdMensaje, Mensaje, IdConversacion, Remitente, FORMAT(Fecha, 'yyyy-MM-dd') AS Fecha FROM Mensajes WHERE IdConversacion = @IdConversacion ORDER BY Fecha ASC;
 	END
 	ELSE
 	BEGIN
@@ -311,7 +311,7 @@ BEGIN
 	DECLARE @IdConversacion INT
 	SET @IdConversacion = (SELECT IdConversacion FROM Conversaciones WHERE (Empleado1 = @Remitente AND Empleado2 = @Destinatario) OR (Empleado2 = @Remitente AND Empleado1 = @Destinatario))
 
-	SELECT @Remitente AS Usuario,IdMensaje, Mensaje, IdConversacion, Remitente, FORMAT(Fecha, 'yyyy-MM-dd HH:mm:ss') AS Fecha FROM Mensajes WHERE IdConversacion = @IdConversacion ORDER BY Fecha ASC;
+	SELECT @Remitente AS Usuario,IdMensaje, Mensaje, IdConversacion, Remitente, FORMAT(Fecha, 'yyyy-MM-dd') AS Fecha FROM Mensajes WHERE IdConversacion = @IdConversacion ORDER BY Fecha ASC;
 END
 GO
 
@@ -334,7 +334,7 @@ END
 GO
 
 EXEC SP_ConversacionesIntervalo 2,1
-SELECT * FROM Conversaciones
+SELECT * FROM Mensajes
 
 EXEC SP_Mensajes 2,1, 'Que bueno'
 
