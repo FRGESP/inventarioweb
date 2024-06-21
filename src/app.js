@@ -63,7 +63,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'src','web', 'html', 'index.html'));
   });
 
-app.get('/:page', (req, res) => {
+app.get('/render/:page', (req, res) => {
     const page = req.params.page;
     res.sendFile(path.join(__dirname, 'src', 'web', 'html', `${page}.html`));
   });

@@ -14,7 +14,7 @@ const rutaEditar = "editarProductos"
 const tablaColumnasCrear = "Productos";
 const rutaCrear = "agregarProducto";
 
-API = "http://localhost:3000/";
+API = "/";
 
 //Funcion para crear el formulario para editar
 async function crearFormularioEditar() {
@@ -28,9 +28,7 @@ async function crearFormularioEditar() {
     const valores = await obtenerDatosTablaPorId(valorInputBarra.value); 
     IdElemento = valores[0][`${nombreDelId}`];
     columnas = resJson.map(objeto => objeto.Columnas);
-    console.log(columnas);
     columnas.forEach(elemento => {
-      console.log(elemento);
       if(elemento == nombreDelId) {
         const etiquetaBase = document.getElementById(`${nombreDelId}`);
         etiquetaBase.textContent = `${etiquetaDelID}: ${IdElemento}`;
@@ -41,7 +39,6 @@ async function crearFormularioEditar() {
           selectCategoria.classList.add("form-select","form-control-sm");
           selectCategoria.setAttribute("aria-label","Default select example");
           selectCategoria.id = `in${elemento}`;
-          console.log("El id es: "+ `in${elemento}`);
           document.getElementById(elemento).textContent = "Categoría:"
           document.getElementById(elemento).appendChild(selectCategoria);
           obtenerOpciones("SP_ObtenerCategorias",selectCategoria,valores[0].Categoria);
@@ -50,7 +47,6 @@ async function crearFormularioEditar() {
             selectProveedor.classList.add("form-select","form-control-sm");
             selectProveedor.setAttribute("aria-label","Default select example");
             selectProveedor.id = `in${elemento}`;
-            console.log("El id es: "+ `in${elemento}`);
             document.getElementById(elemento).textContent = "Proveedor:"
             document.getElementById(elemento).appendChild(selectProveedor);
             obtenerOpciones("SP_ObtenerProveedores",selectProveedor,valores[0].Proveedor);
@@ -73,9 +69,7 @@ async function crearFormularioCrear() {
   document.querySelector(".tituloModal").textContent = Titulo;
   const resJson = await obtenerColumnas(tablaColumnasCrear) 
     columnas = resJson.map(objeto => objeto.Columnas);
-    console.log(columnas);
     columnas.forEach(elemento => {
-      console.log(elemento);
       if(elemento == nombreDelId) {
         const etiquetaBase = document.getElementById(`${nombreDelId}`);
         etiquetaBase.remove();
@@ -85,7 +79,6 @@ async function crearFormularioCrear() {
           selectCategoria.classList.add("form-select","form-control-sm");
           selectCategoria.setAttribute("aria-label","Default select example");
           selectCategoria.id = `in${elemento}`;
-          console.log("El id es: "+ `in${elemento}`);
           document.getElementById(elemento).textContent = "Categoría:"
           document.getElementById(elemento).appendChild(selectCategoria);
           obtenerOpciones("SP_ObtenerCategorias",selectCategoria,"");
@@ -94,7 +87,6 @@ async function crearFormularioCrear() {
             selectProveedor.classList.add("form-select","form-control-sm");
             selectProveedor.setAttribute("aria-label","Default select example");
             selectProveedor.id = `in${elemento}`;
-            console.log("El id es: "+ `in${elemento}`);
             document.getElementById(elemento).textContent = "Proveedor:"
             document.getElementById(elemento).appendChild(selectProveedor);
             obtenerOpciones("SP_ObtenerProveedores",selectProveedor,"");
@@ -118,12 +110,10 @@ async function obtenerDatosTabla() {
 
   if (res.ok) {
     const resJson = await res.json();
-    console.log(resJson);
     llenarTabla(resJson);
     valorInputBarra.value = "";
     document.getElementById("selectBuscar").value = "seleccion";
   } else {
-    console.log("No se puedieron obtener");
     crearAlerta("danger","No se puedieron obtener los datos de la tabla");
   }
 }
@@ -158,12 +148,9 @@ function llenarTabla(data) {
 //Funcion para obtener datos por ID
 async function obtenerDatosTablaPorId(IdElemento) {
   const ruta = `${API}vistaTablas/${stockGetByID}/${IdElemento}`;
-  console.log(ruta);
   const res = await fetch(ruta);
   if (res.ok) {
-    console.log("SIUUU");
     const resJson = await res.json();
-    console.log(resJson);
     habilitarElementos();
     return resJson;
   } else {
@@ -176,9 +163,7 @@ async function obtenerDatosTablaPorId(IdElemento) {
 async function obtenerDatosTablaPorNombre() {
   const res = await fetch(`${API}vistaTablas/${stockGetByName}/${valorInputBarra.value}`);
   if (res.ok) {
-    console.log("SIUUU");
     const resJson = await res.json();
-    console.log(resJson);
     llenarTabla(resJson);
   } else {
     crearAlerta("danger","No se ha encontrado nada con ese nombre");
@@ -188,7 +173,6 @@ async function obtenerDatosTablaPorNombre() {
 //Funcion para obtener datos por Nombre
 async function obtenerColumnas(tabla) {
   const ruta = `${API}vistaTablas/SP_Columnas/${tabla}`;
-  console.log(ruta);
   const res = await fetch(ruta);
   if (res.ok) {
     const resJson = await res.json();
@@ -205,13 +189,11 @@ async function enviarFormulario(id,accion,nombreId,ruta,columnas) {
   let bodyData = {};
   columnas.forEach(columna => {
     if(columna != nombreId) {
-      console.log(`in${columna}`);
       let columnaActual = document.getElementById(`in${columna}`)
       bodyData[columna] =  columnaActual.value;
       columnaActual.remove();
     }
   });
-  console.log(bodyData);
   let res;
   if(accion == "Editar") {
      res = await fetch(API+ruta+id, {
@@ -238,14 +220,12 @@ async function enviarFormulario(id,accion,nombreId,ruta,columnas) {
       } else {
         llenarTabla(await obtenerDatosTablaPorId(resJson.Id));
       }
-      console.log(resJson);
       crearAlerta("success", "Operacion Completada");
       deshabilitarElementos();
   } else {
       crearAlerta("danger", "No se pudo hacer la operacion");
   }
   deshabilitarElementos();
-  console.log(bodyData);
 }
 
 //Funcion para crear alertas
@@ -332,7 +312,6 @@ function crearInput(nombre,valor) {
   const input = crearElementoHTML("input");
   input.classList.add("form-control");
   input.id = `in${nombre}`;
-  console.log("El id es: "+ `in${nombre}`);
   input.value = valor;
   etiqueta.appendChild(input);
 }
@@ -351,10 +330,8 @@ async function obtenerOpciones(stock,select,actual) {
           opcion.textContent = valor.Elemento;
           select.appendChild(opcion);
       });
-      console.log(resJson);
   }
   else{
-      console.log("No hay productos");
   }
 }
 
@@ -417,7 +394,6 @@ async function setEmpleadoID() {
 
   if(res.ok) {
       const resJSON = await res.json();
-      console.log("El empleado con el ID: "+ resJSON.Empleado)
   } else {
       alert("No se ha podido establecer conexion");
   }

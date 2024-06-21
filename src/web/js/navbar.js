@@ -15,7 +15,6 @@ async function cargar() {
         });
     }
   } else {
-    console.log("Sesion cerrada");
     alert("Su sesión ha expirado");
     window.location.href="/"
   }
@@ -64,10 +63,8 @@ async function obtenerOpciones(stock,select) {
       opcion.value = 0;
       opcion.setAttribute("selected","");
 
-      console.log(resJson);
   }
   else{
-      console.log("No hay productos");
   }
 }
 
@@ -95,7 +92,6 @@ async function enviarMensaje() {
   if(res.ok) {
     mensaje.value = "";
   } else {
-    console.log("No se pudo")
   }
 }
 
@@ -114,7 +110,6 @@ async function obtenerConversacionInterval() {
         container.scrollTop = container.scrollHeight;
       }
   } else {
-    console.log("No se puedieron obtener");
   }
   }
 }
@@ -131,7 +126,6 @@ function mostrarMensajes(resJson) {
         Fecha = new Date(elemento.Fecha)
         let filaFecha = document.createElement("tr");
         let colFecha = document.createElement("td");
-        console.log(Fecha.toLocaleDateString())
         colFecha.textContent = Fecha.toLocaleDateString();
         colFecha.setAttribute("colspan","2");
         colFecha.classList.add("text-center")

@@ -13,7 +13,7 @@ const rutaEditar = "editarDirecciones"
 const tablaColumnasCrear = "VistaDirecciones";
 const rutaCrear = "agregarDireccion";
 
-API = "http://localhost:3000/";
+API = "/";
 
 //Funcion para crear el formulario para editar
 async function crearFormularioEditar() {
@@ -21,13 +21,10 @@ async function crearFormularioEditar() {
   document.querySelector(".tituloModal").textContent = Titulo;
    const nombreDelId = "IdDireccion" 
    const valores = await obtenerDatosTablaPorId(valorInputBarra.value);
-   console.log(valores[0]);
    let IdElemento = valores[0][`${nombreDelId}`];
    const resJson = await obtenerColumnas(tablaColumnasCrear) 
      columnas = resJson.map(objeto => objeto.Columnas);
-     console.log(columnas);
      columnas.forEach(elemento => {
-       console.log(elemento);
        if(elemento == nombreDelId) {
          const etiquetaBase = document.getElementById(`${nombreDelId}`);
          etiquetaBase.remove();
@@ -76,9 +73,7 @@ async function crearFormularioCrear() {
   
   const resJson = await obtenerColumnas(tablaColumnasCrear) 
     columnas = resJson.map(objeto => objeto.Columnas);
-    console.log(columnas);
     columnas.forEach(elemento => {
-      console.log(elemento);
       if(elemento == nombreDelId) {
         const etiquetaBase = document.getElementById(`${nombreDelId}`);
         etiquetaBase.remove();
@@ -124,7 +119,6 @@ async function llenarDireccion(columnas,calle,colonia) {
     const informacion = await obtenerDatosTablaPorId(codigoPost);
     deshabilitarElementos();
     stockGetByID = vari;
-    console.log(informacion);
     columnas.forEach(elemento => {
       let  lugar = document.getElementById(elemento);
       if(elemento != "IdDireccion" && elemento != "CodigoPostal") {
@@ -134,7 +128,6 @@ async function llenarDireccion(columnas,calle,colonia) {
           selectColonia.classList.add("form-select","form-control-sm");
           selectColonia.setAttribute("aria-label","Default select example");
           selectColonia.id = `in${elemento}`;
-          console.log("El id es: "+ `in${elemento}`);
           document.getElementById(elemento).appendChild(selectColonia);
           obtenerColonias(informacion,selectColonia,colonia);
         } else if(elemento == "Calle") {
@@ -167,14 +160,10 @@ $(document).ready(function() {
       const elements = document.querySelectorAll('[id^="in"]');
       let ids = Array.from(elements).filter(element => element.id !== "inputBuscar");
       ids = Array.from(ids).map(element => element.id);
-      console.log(ids);
-      console.log("siuuu");
 
 
       ids.forEach(elemento => {
-      console.log(elemento);
       if (elemento != "inCodigoPostal") {
-        console.log(elemento);
         const inputElement = document.getElementById(`${elemento}`);
         const divElement = inputElement.parentNode;
         inputElement.remove();
@@ -192,12 +181,10 @@ async function obtenerDatosTabla() {
 
   if (res.ok) {
     const resJson = await res.json();
-    console.log(resJson);
     llenarTabla(resJson);
     valorInputBarra.value = "";
     document.getElementById("selectBuscar").value = "seleccion";
   } else {
-    console.log("No se puedieron obtener");
     crearAlerta("danger","No se puedieron obtener los datos de la tabla");
   }
 }
@@ -231,12 +218,9 @@ function llenarTabla(data) {
 //Funcion para obtener datos por ID
 async function obtenerDatosTablaPorId(IdElemento) {
   const ruta = `${API}vistaTablas/${stockGetByID}/${IdElemento}`;
-  console.log(ruta);
   const res = await fetch(ruta);
   if (res.ok) {
-    console.log("SIUUU");
     const resJson = await res.json();
-    console.log(resJson);
     habilitarElementos();
     return resJson;
   } else {
@@ -248,7 +232,6 @@ async function obtenerDatosTablaPorId(IdElemento) {
 //Funcion para obtener datos por Nombre
 async function obtenerColumnas(tabla) {
   const ruta = `${API}vistaTablas/SP_Columnas/${tabla}`;
-  console.log(ruta);
   const res = await fetch(ruta);
   if (res.ok) {
     const resJson = await res.json();
@@ -265,13 +248,11 @@ async function enviarFormulario(id,accion,nombreId,ruta,columnas) {
   let bodyData = {};
   columnas.forEach(columna => {
     if(columna != nombreId) {
-      console.log(`in${columna}`);
       let columnaActual = document.getElementById(`in${columna}`)
       bodyData[columna] =  columnaActual.value;
       columnaActual.remove();
     }
   });
-  console.log(bodyData);
   let res;
   if(accion == "Editar") {
      res = await fetch(API+ruta+id, {
@@ -298,13 +279,11 @@ async function enviarFormulario(id,accion,nombreId,ruta,columnas) {
       } else {
         llenarTabla(await obtenerDatosTablaPorId(resJson.Id));
       }
-      console.log(resJson);
       crearAlerta("success", "Operacion Completada");
   } else {
       crearAlerta("danger", "No se pudo hacer la operacion");
   }
   deshabilitarElementos();
-  console.log(bodyData);
 }
 
 //Funcion para crear alertas
@@ -374,7 +353,6 @@ function crearInput(nombre,valor) {
   const input = crearElementoHTML("input");
   input.classList.add("form-control");
   input.id = `in${nombre}`;
-  console.log("El id es: "+ `in${nombre}`);
   input.value = valor;
   etiqueta.appendChild(input);
 }
@@ -393,10 +371,8 @@ async function obtenerOpciones(stock,select,actual) {
           opcion.textContent = valor.Elemento;
           select.appendChild(opcion);
       });
-      console.log(resJson);
   }
   else{
-      console.log("No hay productos");
   }
 }
 

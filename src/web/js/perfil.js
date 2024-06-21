@@ -1,4 +1,4 @@
-API = "http://localhost:3000/";
+API = "/";
 
 async function datosUsuario() {
   const setID = await setEmpleadoID()
@@ -14,7 +14,6 @@ async function datosUsuario() {
     document.getElementById("Telefono").value = resJson.Telefono;
     document.getElementById("Sucursal").value = resJson.Sucursal;
   } else {
-    console.log("Sesion cerrada");
   }
 };
 
@@ -68,7 +67,6 @@ async function setEmpleadoID() {
   
     if(res.ok) {
         const resJSON = await res.json();
-        console.log("El empleado con el ID: "+ resJSON.Empleado)
     } else {
         alert("No se ha podido establecer conexion");
     }

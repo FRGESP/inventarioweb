@@ -8,7 +8,7 @@ const tituloBodySup = document.getElementById("TituloBody").textContent = "Ticke
 const stockGetAllData = "SP_TicketsVista"
 let stockGetByID = "SP_ProductosTicketVista"
 
-API = "http://localhost:3000/";
+API = "/";
 
 
 
@@ -21,11 +21,9 @@ async function obtenerDatosTabla() {
 
   if (res.ok) {
     const resJson = await res.json();
-    console.log(resJson);
     llenarTabla(resJson);
     valorInputBarra.value = "";
   } else {
-    console.log("No se puedieron obtener");
     crearAlerta("danger","No se puedieron obtener los datos de la tabla");
   }
 }
@@ -53,11 +51,9 @@ function llenarTablaVentas(data) {
 //Funcion para obtener datos por ID
 async function obtenerDatosTablaPorId(IdElemento) {
   const ruta = `${API}vistaTablas/${stockGetByID}/${IdElemento}`;
-  console.log(ruta);
   const res = await fetch(ruta);
   if (res.ok) {
     const resJson = await res.json();
-    console.log(resJson);
     habilitarElementos();
     return resJson;
   } else {
@@ -69,7 +65,6 @@ async function obtenerDatosTablaPorId(IdElemento) {
 //Funcion para obtener datos por Nombre
 async function obtenerColumnas(tabla) {
   const ruta = `${API}vistaTablas/SP_Columnas/${tabla}`;
-  console.log(ruta);
   const res = await fetch(ruta);
   if (res.ok) {
     const resJson = await res.json();
@@ -142,7 +137,6 @@ function crearInput(nombre,valor) {
   const input = crearElementoHTML("input");
   input.classList.add("form-control");
   input.id = `in${nombre}`;
-  console.log("El id es: "+ `in${nombre}`);
   input.value = valor;
   etiqueta.appendChild(input);
 }
@@ -191,7 +185,6 @@ async function SacarPDF() {
       window.URL.revokeObjectURL(url);
       obtenerDatosTabla();
   } else {
-      console.log("Hubo un error al obtener el PDF");
       crearAlerta("danger","Hubo un error al obtener el PDF");
   }
 };
@@ -212,7 +205,6 @@ async function botonesEmpleados(boton) {
     IdElemento = valores[0][`${nombreDelId}`];
     columnas = resJson.map(objeto => objeto.Columnas);
     columnas.forEach(elemento => {
-      console.log(elemento);
       if(elemento == nombreDelId) {
         const etiquetaBase = document.getElementById(`${nombreDelId}`);
         etiquetaBase.textContent = `${etiquetaDelID}: ${IdElemento}`;

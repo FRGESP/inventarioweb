@@ -7,12 +7,11 @@ const tituloBodySup = document.getElementById("TituloBody").textContent ="Ventas
 const stockGetAllData = "SP_TicketActualVista";
 const stockDeleteElement = "SP_DeleteVenta";
 
-API = "http://localhost:3000/";
+API = "/";
 
 async function buscarCliente() {
   const IdCliente = document.getElementById("inputCliente");
   const botonBuscar = document.getElementById("botonCliente");
-  console.log(IdCliente.value);
 
   const res = await fetch(`${API}obtenerCliente/${IdCliente.value}`);
   if (res.ok) {
@@ -22,7 +21,6 @@ async function buscarCliente() {
     IdCliente.value = resJson.Nombre;
     IdCliente.setAttribute("disabled", "");
     botonBuscar.style.display = "none";
-    console.log(resJson.Nombre);
   } else {
     crearAlerta("danger", "Cliente no encontrado");
   }
@@ -95,7 +93,6 @@ async function SacarPDF() {
       window.URL.revokeObjectURL(url);
       obtenerDatosTabla();
   } else {
-      console.log("Hubo un error al obtener el PDF");
   }
 };
 //Fucion para obtener total de la venta
@@ -136,7 +133,6 @@ async function obtenerDatosTabla() {
   
   if (res.ok) {
     const resJson = await res.json();
-    console.log(resJson);
     if(resJson.length == 0)
     {
         botonCheck.setAttribute("disabled","");
@@ -145,14 +141,12 @@ async function obtenerDatosTabla() {
     }
     llenarTabla(resJson);
     const cliente =  await obtenerClienteAct();
-    console.log(cliente)
     if(cliente != 0 && botonBuscar.style.display != 'none') {
       document.getElementById("inputCliente").value = cliente;
       document.getElementById("botonCliente").click();
     }
     obtenerTotal();
   } else {
-    console.log("No se puedieron obtener");
     crearAlerta("danger", "No se puedieron obtener los datos de la tabla");
   }
 }
@@ -188,12 +182,9 @@ function llenarTabla(data) {
 //Funcion para obtener datos por ID
 async function obtenerDatosTablaPorId(IdElemento) {
   const ruta = `${API}vistaTablas/${stockGetByID}/${IdElemento}`;
-  console.log(ruta);
   const res = await fetch(ruta);
   if (res.ok) {
-    console.log("SIUUU");
     const resJson = await res.json();
-    console.log(resJson);
     habilitarElementos();
     return resJson;
   } else {

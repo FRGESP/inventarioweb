@@ -1,7 +1,7 @@
 const inputIdEmpleado = document.getElementById('IdEmpleado');
 const inputContraseña = document.getElementById('Contraseña');
 
-API = "http://localhost:3000/";
+API = "/";
 
 async function ingresar() { 
     const res = await fetch(API+"login", {
@@ -21,7 +21,7 @@ async function ingresar() {
         if(respuesta == "Correct") {
             crearAlerta("success","Contraseña Correcta")
             //setEmpleadoID()
-            window.location.href = '/'+'restock'
+            window.location.href = '/render/restock'
         }
         if(respuesta == "Incorrect") {
             crearAlerta("danger","Contraseña Incorrecta")
@@ -35,7 +35,6 @@ async function ingresar() {
     }
     else
     {
-        console.log("NOOO")
     }
 }
 
@@ -44,7 +43,6 @@ async function setEmpleadoID() {
 
     if(res.ok) {
         const resJSON = await res.json();
-        console.log("El empleado con el ID: "+ resJSON.Empleado)
     } else {
         alert("No se ha podido establecer conexion");
     }

@@ -16,7 +16,7 @@ const tablaColumnasCrear = "PersonasVista";
 const rutaCrear = "agregarPersona";
 let IdActual = "IdProducto"
 
-API = "http://localhost:3000/";
+API = "/";
 
 
 //Funcion para obtener los datos de la tabla
@@ -27,11 +27,9 @@ async function obtenerDatosTabla() {
 
   if (res.ok) {
     const resJson = await res.json();
-    console.log(resJson);
     llenarTabla(resJson);
     document.getElementById("IDTabla").textContent = IdActual;
   } else {
-    console.log("No se puedieron obtener");
     crearAlerta("danger","No se puedieron obtener los datos de la tabla");
   }
 }
@@ -48,12 +46,9 @@ function llenarTabla(data) {
 //Funcion para obtener datos por ID
 async function obtenerDatosTablaPorId(IdElemento) {
   const ruta = `${API}vistaTablas/${stockGetByID}/${IdElemento}`;
-  console.log(ruta);
   const res = await fetch(ruta);
   if (res.ok) {
-    console.log("SIUUU");
     const resJson = await res.json();
-    console.log(resJson);
     return resJson;
   } else {
     crearAlerta("danger","No se ha encontrado nada con ese ID");
@@ -66,7 +61,6 @@ async function Filtrardatos(accion) {
   const res = await fetch(`${API}getByAccion/${stockGetByFilter}/${accion}`);
   if (res.ok) {
     const resJson = await res.json();
-    console.log(resJson);
     llenarTabla(resJson);
   } else {
     crearAlerta("danger","No se ha encontrado nada con esa acción");
@@ -76,7 +70,6 @@ async function Filtrardatos(accion) {
 //Funcion para obtener datos por Nombre
 async function obtenerColumnas(tabla) {
   const ruta = `${API}vistaTablas/SP_Columnas/${tabla}`;
-  console.log(ruta);
   const res = await fetch(ruta);
   if (res.ok) {
     const resJson = await res.json();
@@ -190,7 +183,6 @@ async function botonesEmpleados(boton) {
       IdElemento = valores[0][`${nombreDelId}`];
       columnas = resJson.map(objeto => objeto.Columnas);
       columnas.forEach(elemento => {
-        console.log(elemento);
         if(elemento == nombreDelId) {
           const etiquetaBase = document.getElementById(`${nombreDelId}`);
           etiquetaBase.textContent = `${etiquetaDelID}: ${IdElemento}`;

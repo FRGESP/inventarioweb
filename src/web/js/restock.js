@@ -12,7 +12,7 @@ const stockGetByName = "SP_RestockNombre"
 const tablaColumnasEditar = "VistaEditarStock";
 const rutaEditar = "restock"
 
-API = "http://localhost:3000/";
+API = "/";
 
 //Funcion para crear el formulario para editar
 async function crearFormularioEditar() {
@@ -26,9 +26,7 @@ async function crearFormularioEditar() {
     const valores = await obtenerDatosTablaPorId(valorInputBarra.value); 
     IdElemento = valores[0][`IdProducto`];
     columnas = resJson.map(objeto => objeto.Columnas);
-    console.log(columnas);
     columnas.forEach(elemento => {
-      console.log(elemento);
       if(elemento == nombreDelId) {
         const etiquetaBase = document.getElementById(`${nombreDelId}`);
         etiquetaBase.textContent = `${etiquetaDelID}: ${valores[0].Nombre}`;
@@ -57,13 +55,11 @@ async function obtenerDatosTabla() {
 
   if (res.ok) {
     const resJson = await res.json();
-    console.log(resJson);
     llenarTabla(resJson);
     valorInputBarra.value = "";
     document.getElementById("selectBuscar").value = "seleccion";
     document.getElementById("selectProveedor").value = "seleccion";
   } else {
-    console.log("No se puedieron obtener");
     crearAlerta("danger","No se puedieron obtener los datos de la tabla");
   }
 }
@@ -79,12 +75,9 @@ function llenarTabla(data) {
 //Funcion para obtener datos por ID
 async function obtenerDatosTablaPorId(IdElemento) {
   const ruta = `${API}vistaTablas/${stockGetByID}/${IdElemento}`;
-  console.log(ruta);
   const res = await fetch(ruta);
   if (res.ok) {
-    console.log("SIUUU");
     const resJson = await res.json();
-    console.log(resJson);
     habilitarElementos();
     return resJson;
   } else {
@@ -99,7 +92,6 @@ async function obtenerDatosTablaPorNombre() {
   if (res.ok) {
     document.getElementById("selectProveedor").value = "seleccion";
     const resJson = await res.json();
-    console.log(resJson);
     llenarTabla(resJson);
   } else {
     crearAlerta("danger","No se ha encontrado nada con ese nombre");
@@ -110,9 +102,7 @@ async function obtenerDatosTablaPorNombre() {
 async function obtenerDatosTablaPorCantProv() {
     const res = await fetch(`${API}obtenerRestock/${valorInputBarra.value}/${proveedorAct}`);
     if (res.ok) {
-      console.log("SIUUU");
       const resJson = await res.json();
-      console.log(resJson);
       llenarTabla(resJson);
       habilitarImpresion();
     } else {
@@ -123,7 +113,6 @@ async function obtenerDatosTablaPorCantProv() {
 //Funcion para obtener datos por Nombre
 async function obtenerColumnas(tabla) {
   const ruta = `${API}vistaTablas/SP_Columnas/${tabla}`;
-  console.log(ruta);
   const res = await fetch(ruta);
   if (res.ok) {
     const resJson = await res.json();
@@ -141,7 +130,6 @@ async function enviarFormulario(id,accion,ruta) {
   let columnaActual = document.getElementById(`inStock`)
       bodyData["Stock"] =  columnaActual.value;
       columnaActual.remove();
-      console.log(bodyData);
 
   let res;
 
@@ -160,12 +148,10 @@ async function enviarFormulario(id,accion,ruta) {
       if(accion == "Editar") {
         llenarTabla(await obtenerDatosTablaPorId(id));
       }
-      console.log(resJson);
       crearAlerta("success", "Stock Actualizado");
   } else {
       crearAlerta("danger", "No se pudo hacer la operacion");
   }
-  console.log(bodyData);
 }
 
 //Funcion para crear alertas
@@ -239,7 +225,6 @@ function crearInput(nombre,valor) {
   const input = crearElementoHTML("input");
   input.classList.add("form-control");
   input.id = `in${nombre}`;
-  console.log("El id es: "+ `in${nombre}`);
   input.value = valor;
   etiqueta.appendChild(input);
 }
@@ -256,10 +241,8 @@ async function obtenerProveedores() {
             opcion.textContent = valor.Elemento;
             selectProv.appendChild(opcion);
         });
-        console.log(resJson);
     }
     else{
-        console.log("No hay productos");
     }
   }
 
@@ -359,7 +342,6 @@ async function botonesProveedores(boton) {
       IdElemento = valores[0][`${nombreDelId}`];
       columnas = resJson.map(objeto => objeto.Columnas);
       columnas.forEach(elemento => {
-        console.log(elemento);
         if(elemento == nombreDelId) {
           const etiquetaBase = document.getElementById(`${nombreDelId}`);
           etiquetaBase.textContent = `${etiquetaDelID}: ${IdElemento}`;
@@ -412,6 +394,5 @@ async function botonesProveedores(boton) {
         window.URL.revokeObjectURL(url);
         obtenerDatosTabla();
     } else {
-        console.log("Hubo un error al obtener el PDF");
     }
   };
